@@ -18,7 +18,7 @@ async function fetchRegisterNode() {
  * Get login DB URL.
  */
 function getLoginDbUrl() {
-  return "https://join-da53b-default-rtdb.firebaseio.com/";
+  return "https://join-projekt-ca51d-default-rtdb.europe-west1.firebasedatabase.app/";
 }
 /**
  * Try fetch register direct.

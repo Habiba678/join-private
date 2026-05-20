@@ -73,7 +73,7 @@ async function postRegistration(passwordResult) {
  * Get register DB URL.
  */
 function getRegisterDbUrl() {
-  return "https://join-da53b-default-rtdb.firebaseio.com/";
+  return "https://join-projekt-ca51d-default-rtdb.europe-west1.firebasedatabase.app/";
 }
 
 /**
