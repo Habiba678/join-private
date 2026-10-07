@@ -1,0 +1,721 @@
+@import url('./select_animation.css');
+@import url('./button.css');
+
+#assignedText {
+  display: flex;
+  justify-content: space-around;
+  color: #999999;
+}
+
+.contact-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px;
+  cursor: pointer;
+}
+
+.contact-option:hover {
+  background: #f2f2f2;
+}
+
+.contact-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-left: -8px;
+  border-radius: 50%;
+  background: black;
+  color: white;
+  font-weight: bold;
+
+}
+
+.avatar-color-0 {
+  background: #FF7A00;
+}
+
+.avatar-color-1 {
+  background: #FF5EB3;
+}
+
+.avatar-color-2 {
+  background: #6E52FF;
+}
+
+.avatar-color-3 {
+  background: #9327FF;
+}
+
+.avatar-color-4 {
+  background: #00BEE8;
+}
+
+.avatar-color-5 {
+  background: #1FD7C1;
+}
+
+.avatar-color-6 {
+  background: #FFBB2B;
+}
+
+.avatar-color-7 {
+  background: #FF4646;
+}
+
+.avatar-color-8 {
+  background: #FC71FF;
+}
+
+.avatar-color-9 {
+  background: #0038FF;
+}
+
+.avatar-color-10 {
+  background: #C3FF2B;
+}
+
+.avatar-color-11 {
+  background: #FFE62B;
+}
+
+.contact-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  cursor: pointer;
+}
+
+.contact-option input[type="checkbox"] {
+  pointer-events: none;
+  height: 21px;
+  width: 21px;
+}
+
+.content-wrepper {
+  max-width: 1920px;
+  align-items: center;
+  flex-direction: row;
+}
+
+.kpi-panel-task {
+  display: flex;
+  justify-content: flex-start;
+  flex-direction: row;
+  width: 100%;
+  padding: 35px 24px;
+  gap: 5px;
+}
+
+.form_1 {
+  display: flex;
+  width: 50%;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.form_2 {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  width: 50%;
+  height: 460px;
+}
+
+.form-details {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  width: 80%;
+  gap: 8px;
+}
+
+.form-details input {
+  height: 42px;
+  border: unset;
+  border-radius: 8px;
+  border: 1px solid gray;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 16px;
+}
+
+.form-details input[type="text"],
+.form-details input[type="date"] {
+  height: 42px;
+  width: 100%;
+  border: unset;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  padding: 0 10px;
+}
+
+.form-details input[type="text"]:focus {
+  border: 1px solid #5ec0e9;
+  outline: none;
+}
+
+.form-details input[type="date"]:focus {
+
+  border: 1px solid #5ec0e9;
+  outline: none;
+}
+
+.form-details textarea {
+  width: 100%;
+  height: 168px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  padding: 10px;
+  font-size: 16px;
+}
+
+.form-details textarea:focus {
+  border: 1px solid #5ec0e9;
+  outline: none;
+}
+
+.subtasks-input {
+  position: relative;
+  width: 100%;
+}
+
+.subtasks-input.is-empty .subtasks-add-btn,
+.subtasks-input.is-empty .subtasks-clear-btn {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.subtasks-input input[type="text"] {
+  width: 100%;
+  padding-left: 10px;
+  padding-right: 96px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.form-details input::placeholder,
+.form-details textarea::placeholder {
+  font-size: 16px;
+}
+
+.subtasks-add-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.subtasks-clear-btn {
+  position: absolute;
+  right: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.subtasks-clear-btn img {
+  width: 16px;
+  height: 16px;
+}
+
+.subtasks-add-btn img {
+  width: 20px;
+  height: 20px;
+  filter: brightness(0) saturate(100%);
+}
+
+.subtasks-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  max-height: 125px;
+  overflow-y: auto;
+  gap: 6px;
+}
+
+.required-note {
+  margin: 40px 0 0;
+  font-size: 16px;
+  color: #2a3647;
+}
+
+.required-note .label-star {
+  margin-right: 4px;
+  color: #ff3d00;
+}
+
+.subtasks-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: auto;
+  background: #f6f7f8;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 16px;
+}
+
+.subtasks-item span {
+  flex: 1;
+  margin-right: 10px;
+  word-break: break-word;
+}
+
+.subtasks-actions {
+  display: flex;
+  align-items: center;
+  flex-direction: row-reverse;
+  gap: 0px;
+  padding: 6px;
+}
+
+.subtasks-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.subtasks-remove {
+  background: transparent;
+  border: none;
+  color: #666;
+  font-size: 16px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+.subtasks-remove img {
+  width: 16px;
+  height: 16px;
+}
+
+.subtasks-edit {
+  background: transparent;
+  border: none;
+  color: #666;
+  font-size: 16px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+.subtasks-edit img {
+  width: 16px;
+  height: 16px;
+}
+
+.subtasks-save-edit {
+  background: transparent;
+  border: none;
+  color: #666;
+  font-size: 16px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+.subtasks-save-edit img {
+  width: 16px;
+  height: 16px;
+}
+
+.subtasks-cancel-edit {
+  background: transparent;
+  border: none;
+  color: #666;
+  font-size: 16px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+.subtasks-cancel-edit img {
+  width: 16px;
+  height: 16px;
+}
+
+.subtasks-separator {
+  width: 2px;
+  height: 18px;
+  background-color: #969595;
+  margin: 0 4px;
+}
+
+.form-details textarea {
+  width: 100%;
+  height: 168px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.form-separator {
+  width: 2px;
+  background-color: rgb(174, 174, 174);
+  margin-left: 2%;
+  margin-right: 2%;
+  border-radius: 16px;
+  opacity: 0.2;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.priority-section {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  gap: 15px;
+}
+
+.priority-section .priority-btn {
+  flex: 0 0 136px;
+  width: 136px;
+  height: 56px;
+  border: 1px solid #d0d0d0;
+  background: #ffffff;
+  border-radius: 8px;
+  color: #000000;
+  font-weight: 700;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  list-style: none;
+}
+
+.priority-section .priority-btn .btn-icon {
+  filter: none;
+}
+
+.priority-section .priority-btn.medium .btn-icon {
+  filter: brightness(0) saturate(100%) invert(57%) sepia(88%)
+    saturate(749%) hue-rotate(1deg) brightness(103%) contrast(103%);
+}
+
+.priority-section .priority-btn.--selected {
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.priority-section .priority-btn.--selected .btn-icon {
+  filter: brightness(0) invert(1);
+}
+
+.priority-section .priority-btn.urgent.--selected {
+  background-color: #ff3d00;
+}
+
+.priority-section .priority-btn.medium.--selected {
+  background-color: rgb(255, 168, 0);
+}
+
+.priority-section .priority-btn.low.--selected {
+  background-color: #7ae229;
+}
+
+@media (max-width: 1100px) {
+  .form_1 {
+    width: 40%;
+  }
+
+  .form_2 {
+    width: 60%;
+  }
+
+  .form-details {
+    width: 100%;
+  }
+}
+
+.kpi-panel-task-footer {
+  display: grid;
+  align-items: center;
+  justify-content: flex-start;
+  width: 93%;
+  height: 170px;
+  grid-template-columns: 1fr auto;
+  padding-left: 77px;
+}
+
+.form-details>label:first-child {
+  margin-top: 0;
+}
+
+.create-task-button {
+  display: flex;
+  flex-direction: row;
+  gap: 35px;
+  margin-left: auto;
+}
+
+.kpi-panel-task-footer .primary-btn:not(.--primary-btn-cancel):hover {
+  background-color: #29abe2;
+  border-color: #29abe2;
+}
+
+.kpi-panel-task-footer .--primary-btn-cancel:hover {
+  color: #29abe2;
+  border-color: #29abe2;
+}
+
+.kpi-panel-task-footer .--primary-btn-cancel:hover .btn-icon {
+  filter: brightness(0) saturate(100%) invert(53%) sepia(77%) saturate(494%)
+    hue-rotate(161deg) brightness(96%) contrast(92%);
+}
+
+.kpi-panel-task-footer .--primary-btn-cancel:hover {
+  color: #29abe2;
+  background-color: #ffffff;
+}
+
+label .label-star {
+  color: red;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-overlay.is-open {
+  display: flex;
+}
+
+.modal-card {
+  width: min(420px, 90vw);
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+  padding: 18px 20px 16px;
+  border-left: 6px solid rgb(42, 54, 71);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: rgb(42, 54, 71);
+}
+
+.modal-close {
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  color: #666;
+}
+
+.modal-body {
+  margin-top: 10px;
+  color: #333;
+}
+
+.modal-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.modal-actions .modal-ok {
+  height: 42px;
+  width: 110px;
+}
+
+@media (max-width: 1023px) {
+  .form-details {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .kpi-panel-task-footer {
+    display: grid;
+    align-items: center;
+    justify-content: flex-start;
+    width: 96%;
+    height: 170px;
+    grid-template-columns: 1fr auto;
+    padding-left: 30px;
+  }
+}
+
+@media (max-width: 900px) {
+  .add-task-button {
+    background-image: url("../assets/icons/addPlus-white.svg");
+    background-repeat: no-repeat;
+    background-position: center;
+    font-size: 0;
+    height: 48px;
+    border-radius: 16px;
+    margin-left: 90%;
+  }
+
+  .add-task-button:hover {
+    background-image: url("../assets/icons/addPlus-white.svg");
+    background-repeat: no-repeat;
+    background-position: center;
+    font-size: 0;
+    height: 48px;
+    border-radius: 16px;
+
+  }
+
+  .kpi-panel-task {
+    flex-direction: column;
+    padding-bottom: calc(160px + env(safe-area-inset-bottom));
+  }
+
+  .form_1 {
+    width: 100%;
+  }
+
+  .form-separator {
+    width: 100%;
+    height: 2px;
+    margin: 15px 0 15px 0;
+  }
+
+  .form_2 {
+    width: 100%;
+  }
+
+  .kpi-panel-task-footer {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    left: 0;
+    right: 0;
+    bottom: calc(80px + env(safe-area-inset-bottom));
+    z-index: 998;
+    margin: 0;
+    padding: 12px 20px;
+  }
+
+  .create-task-button {
+    margin-left: 0;
+  }
+
+  .required-note {
+    margin: 0px 0px 24px 0px;
+    font-size: 16px;
+    color: #2a3647;
+  }
+}
+
+@media (max-width: 425px) {
+  .kpi-panel-task-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: auto;
+    padding: 12px 20px;
+  }
+
+  .priority-section {
+    justify-content: space-between;
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .priority-section .priority-btn {
+    flex: 0 0 86px;
+    width: 86px;
+    height: 41px;
+    font-size: 16px;
+    line-height: 1;
+    gap: 4px;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    list-style: none;
+    border: 1px solid #d0d0d0;
+    background: #ffffff;
+    border-radius: 8px;
+    color: #000000;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  .priority-section .priority-btn .btn-icon {
+    filter: none;
+    height: 16px;
+    width: 16px;
+  }
+
+  .priority-section .priority-btn.medium .btn-icon {
+    filter: brightness(0) saturate(100%) invert(57%) sepia(88%)
+      saturate(749%) hue-rotate(1deg) brightness(103%) contrast(103%);
+  }
+
+  .priority-section .priority-btn.--selected {
+    color: #ffffff;
+    border-color: transparent;
+  }
+
+  .priority-section .priority-btn.--selected .btn-icon {
+    filter: brightness(0) invert(1);
+  }
+
+  .priority-section .priority-btn.urgent.--selected {
+    background-color: #ff3d00;
+  }
+
+  .priority-section .priority-btn.medium.--selected {
+    background-color: rgb(255, 168, 0);
+  }
+
+  .priority-section .priority-btn.low.--selected {
+    background-color: #7ae229;
+  }
+}
+
+@media (max-width: 376px) {
+  .create-task-button {
+    margin-top: 5px;
+    gap: 16px;
+  }
+}

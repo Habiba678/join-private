@@ -1,0 +1,119 @@
+.main-form {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  gap: 24px;
+  width: 489px;
+  background: white;
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+}
+
+.form-header img {
+  margin-right: 25%;
+}
+
+.form-header h1 {
+  margin-right: 25%;
+}
+
+.form-header h1::after {
+  display: block;
+  content: "";
+  position: absolute;
+  height: 3px;
+  background-color: rgb(94, 192, 233);
+  width: 95px;
+  margin-top: 5px;
+}
+
+.main-form input {
+  height: 42px;
+  width: 88%;
+  border: unset;
+  border: 1px solid gray;
+  border-radius: 8px;
+}
+
+.main-form input:focus {
+  outline: none;
+  border: 1px solid #5ec0e9;
+}
+
+.main-form input[type="checkbox"] {
+  height: 16px;
+  width: 16px;
+}
+
+input[type="text"] {
+  box-sizing: border-box;
+  font-weight: 400;
+  background-color: white;
+  padding: 8px;
+}
+
+input[type="mail"] {
+  box-sizing: border-box;
+  font-weight: 400;
+  background-color: white;
+  padding: 8px;
+}
+
+input[type="password"] {
+  box-sizing: border-box;
+  font-weight: 400;
+  background-color: white;
+  padding: 8px;
+}
+
+.form-footer {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.isValidate {
+  border: 1px solid greenyellow !important;
+}
+
+.main-form input[type="password"].isValidate {
+  cursor: text;
+}
+
+.isInvaled {
+  border: 1px solid rgb(255, 47, 47) !important;
+}
+
+
+input.show-password {
+  cursor: text;
+}
+
+#login-message {
+  display: block;
+  width: 100%;
+  text-align: center;
+  margin: 0 auto;
+  height: 55px;
+}
+
+@media (max-width: 500px) {
+  .main-form {
+    width: 80%;
+    height: auto;
+    padding: 20px;
+    gap: 8px;
+  }
+}

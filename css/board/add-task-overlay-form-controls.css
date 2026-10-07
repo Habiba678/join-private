@@ -1,0 +1,127 @@
+.add-task-overlay label .label-star {
+  color: red;
+}
+
+.label-star{color: rgb(255, 13, 13);}
+
+.add-task-overlay select {
+  box-sizing: border-box;
+  height: 42px;
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  appearance: unset;
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  background-size: 26px;
+  padding: 8px 32px 8px 8px;
+  transition: 0.4s;
+}
+
+.add-task-overlay select:focus {
+border: 1px solid #5ec0e9;
+  outline: none;
+}
+
+.add-task-overlay option {
+  color: #666;
+  border-radius: 8px;
+  background: #eeeeee00;
+  padding: 10px;
+  transition: 0.4s;
+}
+
+.add-task-overlay .kpi-panel-task-footer {
+  display: grid;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  height: 170px;
+  grid-template-columns: 1fr auto;
+  padding-left: 80px;
+  padding-right: 28px;
+}
+
+.add-task-overlay .create-task-button {
+  display: flex;
+  flex-direction: row;
+  gap: 35px;
+  margin-left: auto;
+}
+.add-task-overlay .create-task-button .primary-btn:not(.--primary-btn-cancel):hover {
+  background-color: #29abe2;
+  border-color: #29abe2;
+  color: #ffffff;
+}
+
+.add-task-overlay .create-task-button .primary-btn:not(.--primary-btn-cancel):hover .btn-icon {
+  filter: brightness(0) invert(1);
+}
+
+.add-task-overlay .--primary-btn-cancel:hover {
+  color: #29abe2;
+  border-color: #29abe2;
+}
+
+.add-task-overlay .--primary-btn-cancel:hover .btn-icon {
+  filter: brightness(0) saturate(100%) invert(53%) sepia(77%) saturate(494%)
+    hue-rotate(161deg) brightness(96%) contrast(92%);
+}
+.create-task-button .primary-btn {
+  display: flex;
+  height: 56px;
+  width: 176px;
+  font-size: 21px;
+  font-weight: 700;
+  border: unset;
+  color: white;
+  background-color: rgb(42, 54, 71);
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.add-task-overlay .primary-btn .btn-icon {
+  height: 24px;
+  width: 24px;
+}
+
+.add-task-overlay .primary-btn:focus {
+  border: 1px gray solid;
+  transition: 0.8s ease-in-out;
+}
+
+.add-task-overlay .primary-btn-cancel,
+.add-task-overlay .--primary-btn-cancel {
+  width: auto;
+  height: 56px;
+  background-color: #fffefe;
+  border: 1px solid grey;
+  color: #000;
+  font-size: 21px;
+  font-family: Inter, Arial, sans-serif;
+  font-weight: 400;
+  line-height: 120%;
+  letter-spacing: 0;
+  border-radius: 8px;
+  width: 110px;
+}
+
+.add-task-overlay .kpi-panel-task-footer .--primary-btn-cancel:hover {
+  color: #29abe2;
+  background-color: #ffffff;
+}
+
+.add-task-overlay .required-note {
+  margin: 40px 0 0;
+  font-size: 16px;
+  color: #2a3647;
+}
+
+.add-task-overlay .required-note .label-star {
+  margin-right: 4px;
+  color: #ff3d00;
+}

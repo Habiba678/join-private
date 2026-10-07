@@ -1,0 +1,39 @@
+/** * Animation for login page and select field.
+ */
+const visitedBefore = localStorage.getItem("visited_before");
+const loginForm = document.querySelector(".login-form");
+window.addEventListener("load", () => {
+  if (visitedBefore) {
+    document.body.classList.add("loaded", "visited");
+    if (loginForm) {
+      loginForm.style.opacity = 1;
+      loginForm.style.transform = "translateY(0)";
+      loginForm.style.transition = "unset"; 
+    }
+  } else {
+    setTimeout(() => {
+      document.body.classList.add("loaded");
+      if (loginForm) {
+        loginForm.style.opacity = 1;
+        loginForm.style.transform = "translateY(0)";
+      }
+    }, 100);
+    localStorage.setItem("visited_before", "true");
+  }
+});
+
+/**
+ * Go to signup.
+ */
+function goToSignup() {
+  window.location.href = "./subpages/regist.html";
+}
+
+// addTasks.html Select fild Aniemation
+/**
+ * Select animate.
+ */
+function selectAnimate() {
+  const wrapper = document.querySelector(".select-wrapper");
+  wrapper.classList.toggle("open");
+}

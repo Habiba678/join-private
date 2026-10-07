@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: idb-storage.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: idb-storage.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function () {
+  // Simple IndexedDB wrapper for tasks and contacts with an in-memory cache.
+  // Exposes: window.idbStorage.ready (Promise), getTasksSync(), saveTasks(tasks), getContactsSync(), saveContacts(list)
+
+  /** @type {string} */
+  const DB_NAME = "join_db_v1";
+  /** @type {number} */
+  const DB_VERSION = 1;
+  /** @type {string} */
+  const TASK_STORE = "tasks";
+  /** @type {string} */
+  const CONTACT_STORE = "contacts";
+
+  /** @type {IDBDatabase|null} */
+  let db = null;
+
+  /** @type {{tasks: Task[], contacts: Contact[]}} */
+  let cache = { tasks: [], contacts: [] };
+
+  /**
+   * @typedef {Object} Task
+   * @property {string} id
+   * @property {string} title
+   * @property {string} [description]
+   * @property {boolean} [completed]
+   */
+
+  /**
+   * @typedef {Object} Contact
+   * @property {string} id
+   * @property {string} name
+   * @property {string} email
+   * @property {string} phone
+   */
+
+  /**
+   * Opens the IndexedDB database and creates object stores if needed.
+   * @returns {Promise&lt;IDBDatabase>}
+   */
+  function openDb() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+
+      req.onupgradeneeded = function (e) {
+        const d = e.target.result;
+        if (!d.objectStoreNames.contains(TASK_STORE)) {
+          d.createObjectStore(TASK_STORE, { keyPath: "id" });
+        }
+        if (!d.objectStoreNames.contains(CONTACT_STORE)) {
+          d.createObjectStore(CONTACT_STORE, { keyPath: "id" });
+        }
+      };
+
+      req.onsuccess = function () {
+        db = req.result;
+        resolve(db);
+      };
+
+      req.onerror = function (e) {
+        reject(e);
+      };
+    });
+  }
+
+  /**
+   * Reads all items from the given store.
+   * @param {string} storeName
+   * @returns {Promise&lt;Array&lt;any>>}
+   */
+  function readAll(storeName) {
+    return new Promise((resolve, reject) => {
+      if (!db) return resolve([]);
+      const tx = db.transaction(storeName, "readonly");
+      const store = tx.objectStore(storeName);
+      const req = store.getAll();
+
+      req.onsuccess = function () {
+        resolve(req.result || []);
+      };
+
+      req.onerror = function (e) {
+        reject(e);
+      };
+    });
+  }
+
+  /**
+   * Clears all items from a store.
+   * @param {string} storeName
+   * @returns {Promise&lt;void>}
+   */
+  function clearStore(storeName) {
+    return new Promise((resolve, reject) => {
+      if (!db) return resolve();
+      const tx = db.transaction(storeName, "readwrite");
+      const store = tx.objectStore(storeName);
+      const req = store.clear();
+
+      req.onsuccess = function () {
+        resolve();
+      };
+
+      req.onerror = function (e) {
+        reject(e);
+      };
+    });
+  }
+
+  /**
+   * Puts multiple items into a store.
+   * @param {string} storeName
+   * @param {Array&lt;any>} items
+   * @returns {Promise&lt;void>}
+   */
+  function putMany(storeName, items) {
+    return new Promise((resolve, reject) => {
+      if (!db) return resolve();
+      const tx = db.transaction(storeName, "readwrite");
+      const store = tx.objectStore(storeName);
+      let pending = items.length;
+      if (!pending) return resolve();
+
+      for (let i = 0; i &lt; items.length; i++) {
+        const r = store.put(items[i]);
+        r.onsuccess = function () {
+          pending--;
+          if (!pending) resolve();
+        };
+        r.onerror = function (e) {
+          reject(e);
+        };
+      }
+    });
+  }
+
+  /**
+   * Initializes the database and loads cached tasks and contacts.
+   * @returns {Promise&lt;void>}
+   */
+  async function init() {
+    try {
+      await openDb();
+      cache.tasks = await readAll(TASK_STORE);
+      cache.contacts = await readAll(CONTACT_STORE);
+    } catch (e) {
+      console.error("idb-storage init error:", e);
+      cache = { tasks: [], contacts: [] };
+    }
+  }
+
+  /** @type {Promise&lt;void>} */
+  const ready = init();
+
+  /**
+   * Returns a copy of tasks from the in-memory cache.
+   * @returns {Task[]}
+   */
+  function getTasksSync() {
+    return Array.isArray(cache.tasks) ? cache.tasks.slice() : [];
+  }
+
+  /**
+   * Returns a copy of contacts from the in-memory cache.
+   * @returns {Contact[]}
+   */
+  function getContactsSync() {
+    return Array.isArray(cache.contacts) ? cache.contacts.slice() : [];
+  }
+
+  /**
+   * Saves tasks to IndexedDB and updates the in-memory cache.
+   * @param {Task[]} tasks
+   * @returns {Promise&lt;void>}
+   */
+  async function saveTasks(tasks) {
+    await ready;
+    try {
+      await clearStore(TASK_STORE);
+      if (Array.isArray(tasks) &amp;&amp; tasks.length)
+        await putMany(TASK_STORE, tasks);
+      cache.tasks = Array.isArray(tasks) ? tasks.slice() : [];
+    } catch (e) {
+      console.error("saveTasks error:", e);
+      throw e;
+    }
+  }
+
+  /**
+   * Saves contacts to IndexedDB and updates the in-memory cache.
+   * @param {Contact[]} list
+   * @returns {Promise&lt;void>}
+   */
+  async function saveContacts(list) {
+    await ready;
+    try {
+      await clearStore(CONTACT_STORE);
+      if (Array.isArray(list) &amp;&amp; list.length)
+        await putMany(CONTACT_STORE, list);
+      cache.contacts = Array.isArray(list) ? list.slice() : [];
+    } catch (e) {
+      console.error("saveContacts error:", e);
+      throw e;
+    }
+  }
+
+  /**
+   * Public API exposed on window.idbStorage
+   */
+  window.idbStorage = {
+    /** @type {Promise&lt;void>} */
+    ready: ready,
+    /** @returns {Task[]} */
+    getTasksSync: getTasksSync,
+    /** @param {Task[]} tasks */
+    saveTasks: saveTasks,
+    /** @returns {Contact[]} */
+    getContactsSync: getContactsSync,
+    /** @param {Contact[]} list */
+    saveContacts: saveContacts,
+    /** @returns {Promise&lt;Task[]>} */
+    loadTasks: async function () {
+      await ready;
+      return getTasksSync();
+    },
+    /** @returns {Promise&lt;Contact[]>} */
+    loadContacts: async function () {
+      await ready;
+      return getContactsSync();
+    },
+  };
+})();
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#BOARD_PAGE_URL">BOARD_PAGE_URL</a></li><li><a href="global.html#CONTACTS_STORAGE_KEY">CONTACTS_STORAGE_KEY</a></li><li><a href="global.html#DB_TASK_URL">DB_TASK_URL</a></li><li><a href="global.html#MOBILE_BP">MOBILE_BP</a></li><li><a href="global.html#STORAGE_KEY">STORAGE_KEY</a></li><li><a href="global.html#Todos_urgent">Todos_urgent</a></li><li><a href="global.html#activeSearchQuery">activeSearchQuery</a></li><li><a href="global.html#addDragLeaveHandler">addDragLeaveHandler</a></li><li><a href="global.html#addDragOverHandler">addDragOverHandler</a></li><li><a href="global.html#addDropHandler">addDropHandler</a></li><li><a href="global.html#addSubtasksFromInput">addSubtasksFromInput</a></li><li><a href="global.html#applySearchQuery">applySearchQuery</a></li><li><a href="global.html#attachZoneEvents">attachZoneEvents</a></li><li><a href="global.html#bindAddCardIcons">bindAddCardIcons</a></li><li><a href="global.html#bindDeleteConfirmBackdrop">bindDeleteConfirmBackdrop</a></li><li><a href="global.html#bindDeleteConfirmCancel">bindDeleteConfirmCancel</a></li><li><a href="global.html#bindDeleteConfirmEsc">bindDeleteConfirmEsc</a></li><li><a href="global.html#bindDeleteConfirmOk">bindDeleteConfirmOk</a></li><li><a href="global.html#bindDragEnd">bindDragEnd</a></li><li><a href="global.html#bindDragStart">bindDragStart</a></li><li><a href="global.html#bindDropZones">bindDropZones</a></li><li><a href="global.html#bindOverlayBackdrop">bindOverlayBackdrop</a></li><li><a href="global.html#bindOverlayCancel">bindOverlayCancel</a></li><li><a href="global.html#bindOverlayClose">bindOverlayClose</a></li><li><a href="global.html#bindOverlayDelete">bindOverlayDelete</a></li><li><a href="global.html#bindOverlayEdit">bindOverlayEdit</a></li><li><a href="global.html#bindOverlayEditForm">bindOverlayEditForm</a></li><li><a href="global.html#bindOverlayEsc">bindOverlayEsc</a></li><li><a href="global.html#bindOverlayOpenByCard">bindOverlayOpenByCard</a></li><li><a href="global.html#bindOverlaySave">bindOverlaySave</a></li><li><a href="global.html#bindTopAddButton">bindTopAddButton</a></li><li><a href="global.html#btnEl">btnEl</a></li><li><a href="global.html#buildModalData">buildModalData</a></li><li><a href="global.html#capitalize">capitalize</a></li><li><a href="global.html#clearDragOverClasses">clearDragOverClasses</a></li><li><a href="global.html#clearForm">clearForm</a></li><li><a href="global.html#closeAddTaskOverlay">closeAddTaskOverlay</a></li><li><a href="global.html#closeDeleteConfirm">closeDeleteConfirm</a></li><li><a href="global.html#closeModal">closeModal</a></li><li><a href="global.html#closeTaskOverlay">closeTaskOverlay</a></li><li><a href="global.html#closeValidationModal">closeValidationModal</a></li><li><a href="global.html#colorClassFor">colorClassFor</a></li><li><a href="global.html#createFromForm">createFromForm</a></li><li><a href="global.html#createPersonBadge">createPersonBadge</a></li><li><a href="global.html#createPersonRow">createPersonRow</a></li><li><a href="global.html#createPersonText">createPersonText</a></li><li><a href="global.html#createSubtaskCheckbox">createSubtaskCheckbox</a></li><li><a href="global.html#createSubtaskLabel">createSubtaskLabel</a></li><li><a href="global.html#createSubtaskRow">createSubtaskRow</a></li><li><a href="global.html#createTask">createTask</a></li><li><a href="global.html#deleteContact">deleteContact</a></li><li><a href="global.html#deleteTask">deleteTask</a></li><li><a href="global.html#el">el</a></li><li><a href="global.html#ensureUniqueColors">ensureUniqueColors</a></li><li><a href="global.html#enterOverlayEditMode">enterOverlayEditMode</a></li><li><a href="global.html#escapeHtml">escapeHtml</a></li><li><a href="global.html#exitOverlayEditMode">exitOverlayEditMode</a></li><li><a href="global.html#fetchDBNode">fetchDBNode</a></li><li><a href="global.html#fetchRegisterNode">fetchRegisterNode</a></li><li><a href="global.html#fillOverlayEditForm">fillOverlayEditForm</a></li><li><a href="global.html#findTaskById">findTaskById</a></li><li><a href="global.html#findTaskIndexById">findTaskIndexById</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#generateId">generateId</a></li><li><a href="global.html#getAddTaskRoot">getAddTaskRoot</a></li><li><a href="global.html#getAddTaskStatus">getAddTaskStatus</a></li><li><a href="global.html#getAssignedList">getAssignedList</a></li><li><a href="global.html#getAvatarColor">getAvatarColor</a></li><li><a href="global.html#getAwaitFeedback">getAwaitFeedback</a></li><li><a href="global.html#getCokkieCheck">getCokkieCheck</a></li><li><a href="global.html#getColumnStatus">getColumnStatus</a></li><li><a href="global.html#getContactColorClass">getContactColorClass</a></li><li><a href="global.html#getDeleteConfirmEls">getDeleteConfirmEls</a></li><li><a href="global.html#getDraggedCard">getDraggedCard</a></li><li><a href="global.html#getInitials">getInitials</a></li><li><a href="global.html#getInputValue">getInputValue</a></li><li><a href="global.html#getOverlayElements">getOverlayElements</a></li><li><a href="global.html#getOverlayViewContactColorClass">getOverlayViewContactColorClass</a></li><li><a href="global.html#getSelectedId">getSelectedId</a></li><li><a href="global.html#getTasks">getTasks</a></li><li><a href="global.html#getTasksDone">getTasksDone</a></li><li><a href="global.html#getTasksProgress">getTasksProgress</a></li><li><a href="global.html#getTasksTotal">getTasksTotal</a></li><li><a href="global.html#getUrgrentTodo">getUrgrentTodo</a></li><li><a href="global.html#goToAddTask">goToAddTask</a></li><li><a href="global.html#goToBoard">goToBoard</a></li><li><a href="global.html#goToSignup">goToSignup</a></li><li><a href="global.html#greetingText">greetingText</a></li><li><a href="global.html#groupKey">groupKey</a></li><li><a href="global.html#guastLogin">guastLogin</a></li><li><a href="global.html#handleClick">handleClick</a></li><li><a href="global.html#handleDeleteConfirmCancel">handleDeleteConfirmCancel</a></li><li><a href="global.html#handleDeleteConfirmOk">handleDeleteConfirmOk</a></li><li><a href="global.html#handleDrop">handleDrop</a></li><li><a href="global.html#handleMobileButtonsClick">handleMobileButtonsClick</a></li><li><a href="global.html#handleSubmit">handleSubmit</a></li><li><a href="global.html#hashPasswordWithSalt">hashPasswordWithSalt</a></li><li><a href="global.html#hashString">hashString</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#initAddTaskOverlay">initAddTaskOverlay</a></li><li><a href="global.html#initAssignedDropdown">initAssignedDropdown</a></li><li><a href="global.html#initDeleteConfirm">initDeleteConfirm</a></li><li><a href="global.html#initDragAndDrop">initDragAndDrop</a></li><li><a href="global.html#initOverlayEvents">initOverlayEvents</a></li><li><a href="global.html#initPriorityButtons">initPriorityButtons</a></li><li><a href="global.html#initRedirects">initRedirects</a></li><li><a href="global.html#initSearch">initSearch</a></li><li><a href="global.html#initSubtasks">initSubtasks</a></li><li><a href="global.html#initValidationModal">initValidationModal</a></li><li><a href="global.html#isBackdropOpen">isBackdropOpen</a></li><li><a href="global.html#isDragging">isDragging</a></li><li><a href="global.html#isEditingOverlay">isEditingOverlay</a></li><li><a href="global.html#isMobile">isMobile</a></li><li><a href="global.html#loadContacts">loadContacts</a></li><li><a href="global.html#loadContactsFromStorage">loadContactsFromStorage</a></li><li><a href="global.html#logIn">logIn</a></li><li><a href="global.html#logout">logout</a></li><li><a href="global.html#menuEl">menuEl</a></li><li><a href="global.html#months">months</a></li><li><a href="global.html#nearestUrgentDate">nearestUrgentDate</a></li><li><a href="global.html#normalize">normalize</a></li><li><a href="global.html#normalizeOverlayContact">normalizeOverlayContact</a></li><li><a href="global.html#normalizeSearchQuery">normalizeSearchQuery</a></li><li><a href="global.html#openAddTaskOverlay">openAddTaskOverlay</a></li><li><a href="global.html#openDeleteConfirm">openDeleteConfirm</a></li><li><a href="global.html#openModal">openModal</a></li><li><a href="global.html#openTaskOverlay">openTaskOverlay</a></li><li><a href="global.html#openValidationModal">openValidationModal</a></li><li><a href="global.html#openedTaskId">openedTaskId</a></li><li><a href="global.html#overlayPendingSubtasks">overlayPendingSubtasks</a></li><li><a href="global.html#overlaySelectedContacts">overlaySelectedContacts</a></li><li><a href="global.html#overlaySelectedPriority">overlaySelectedPriority</a></li><li><a href="global.html#overlayViewHashString">overlayViewHashString</a></li><li><a href="global.html#pendingDeleteId">pendingDeleteId</a></li><li><a href="global.html#pendingSubtasks">pendingSubtasks</a></li><li><a href="global.html#pickUniqueColorClass">pickUniqueColorClass</a></li><li><a href="global.html#populateAssignedContacts">populateAssignedContacts</a></li><li><a href="global.html#readOverlayEditForm">readOverlayEditForm</a></li><li><a href="global.html#regData">regData</a></li><li><a href="global.html#registrationSuccessRedirect">registrationSuccessRedirect</a></li><li><a href="global.html#removeModalNow">removeModalNow</a></li><li><a href="global.html#removeTaskById">removeTaskById</a></li><li><a href="global.html#renderContactsList">renderContactsList</a></li><li><a href="global.html#renderDetails">renderDetails</a></li><li><a href="global.html#renderOverlayAssigned">renderOverlayAssigned</a></li><li><a href="global.html#renderOverlaySubtasks">renderOverlaySubtasks</a></li><li><a href="global.html#renderSelectedContacts">renderSelectedContacts</a></li><li><a href="global.html#renderSubtasks">renderSubtasks</a></li><li><a href="global.html#resetAddTaskForm">resetAddTaskForm</a></li><li><a href="global.html#resetOverlayEditMode">resetOverlayEditMode</a></li><li><a href="global.html#saveContacts">saveContacts</a></li><li><a href="global.html#saveEdit">saveEdit</a></li><li><a href="global.html#saveOverlayEdits">saveOverlayEdits</a></li><li><a href="global.html#saveTasks">saveTasks</a></li><li><a href="global.html#selectAnimate">selectAnimate</a></li><li><a href="global.html#selectedContacts">selectedContacts</a></li><li><a href="global.html#selectedPriority">selectedPriority</a></li><li><a href="global.html#setDefaultPriority">setDefaultPriority</a></li><li><a href="global.html#setDeleteConfirmText">setDeleteConfirmText</a></li><li><a href="global.html#setEmptyStateForColumn">setEmptyStateForColumn</a></li><li><a href="global.html#setInputValue">setInputValue</a></li><li><a href="global.html#setOverlayCategory">setOverlayCategory</a></li><li><a href="global.html#setOverlayPriority">setOverlayPriority</a></li><li><a href="global.html#setOverlayTexts">setOverlayTexts</a></li><li><a href="global.html#setText">setText</a></li><li><a href="global.html#showDeleteConfirm">showDeleteConfirm</a></li><li><a href="global.html#showMobileDetails">showMobileDetails</a></li><li><a href="global.html#showMobileList">showMobileList</a></li><li><a href="global.html#showNoSubtasks">showNoSubtasks</a></li><li><a href="global.html#showOverlay">showOverlay</a></li><li><a href="global.html#showPleaseLoginMessageFromQuery">showPleaseLoginMessageFromQuery</a></li><li><a href="global.html#showRegNotice">showRegNotice</a></li><li><a href="global.html#showRegistrationMessageFromQuery">showRegistrationMessageFromQuery</a></li><li><a href="global.html#sortContacts">sortContacts</a></li><li><a href="global.html#syncMenuIds">syncMenuIds</a></li><li><a href="global.html#syncTasksFromDB">syncTasksFromDB</a></li><li><a href="global.html#toggleContact">toggleContact</a></li><li><a href="global.html#toggleOverlayEditState">toggleOverlayEditState</a></li><li><a href="global.html#updateBodyScrollLock">updateBodyScrollLock</a></li><li><a href="global.html#updateCardSubtaskProgress">updateCardSubtaskProgress</a></li><li><a href="global.html#updateEmptyStates">updateEmptyStates</a></li><li><a href="global.html#updatePasswordIcon">updatePasswordIcon</a></li><li><a href="global.html#updateStatusAfterDrop">updateStatusAfterDrop</a></li><li><a href="global.html#updateSubtaskDone">updateSubtaskDone</a></li><li><a href="global.html#updateTaskStatus">updateTaskStatus</a></li><li><a href="global.html#urgent_tasks">urgent_tasks</a></li><li><a href="global.html#urgent_tasks_day">urgent_tasks_day</a></li><li><a href="global.html#urgent_tasks_months">urgent_tasks_months</a></li><li><a href="global.html#urgent_tasks_year">urgent_tasks_year</a></li><li><a href="global.html#validateConfirmPassword">validateConfirmPassword</a></li><li><a href="global.html#validateEmail">validateEmail</a></li><li><a href="global.html#validateEmailRegEx">validateEmailRegEx</a></li><li><a href="global.html#validateFullname">validateFullname</a></li><li><a href="global.html#validateSingUpForm">validateSingUpForm</a></li><li><a href="global.html#verifyPassword">verifyPassword</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Feb 23 2026 20:40:50 GMT+0100 (Mitteleuropäische Normalzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/svg" sizes="32x32" href="../assets/icons/logo.svg">
+        <link rel="stylesheet" href="../css/summary.css">
+        <link rel="stylesheet" href="../css/add_task.css">
+        <link rel="stylesheet" href="../css/header.css">
+        <title>Add Task</title>
+    </head>
+
+    <body>
+        <div class="layout">
+
+            <aside class="sidebar">
+                <div class="logo">
+                    <img src="../assets/icons/logo-white.svg" alt="Join">
+                </div>
+
+                <nav class="menu">
+                    <ul>
+                        <li><a href="./summary.html"><span class="menu-button"><img src="../assets/icons/summary-gray.svg" alt="">Summary</span></a></li>
+                        <li><a href="./add_task.html"><span class="menu-button"><img src="../assets/icons/addTask-gray.svg" alt="">Add Task</span></a></li>
+                        <li><a href="./board.html"><span class="menu-button"><img src="../assets/icons/board-gray.svg" alt="">Board</span></a></li>
+                        <li><a href="./contact.html"><span class="menu-button"><img src="../assets/icons/contacts-gray.svg" alt="">Contacts</span></a></li>
+                    </ul>
+                </nav>
+
+                <div class="sidebar-footer">
+                    <a href="./privacy_policy.html">Privacy Policy</a>
+                    <a href="./legal_notice.html">Legal notice</a>
+                </div>
+            </aside>
+
+
+            <div class="cantainer">
+                <div class="main" id="addTaskRoot">
+
+            <header class="header">
+                <div class="content-wrepper-header">
+                    <div class="header-left">
+                        <img src="../assets/icons/logo.svg" class="header-logo">
+                        <span class="header-title">Kanban Project Management Tool</span>
+                    </div>
+            
+                    <div class="header-right">
+                        <a class="header-help" href="./help.html">?</a>
+                        <div class="header-user-area">
+                            <button class="header-user" id="headerUserBtn" type="button">
+                                G
+                            </button>
+                            <div class="user-menu" id="userMenu">
+                                <a class="user-menu-item" href="./legal_notice.html">Legal Notice</a>
+                                <a class="user-menu-item" href="./privacy_policy.html">Privacy Policy</a>
+                                <a class="user-menu-item menu-item--mobile" href="./help.html">Help</a>
+                                <a class="user-menu-item" href="#" onclick="logout()">Log out</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+                    <div class="summary-section">
+                        <div class="summary-headline">
+                            <h1 class="summary-title">Add Task</h1>
+                        </div>
+                    </div>
+                    <div class="content-wrepper">
+                        <div class="kpi-panel-task">
+
+
+                            <div class="form_1">
+                                <form class="form-details">
+                                    <label for="title">Title <span class="label-star">*</span></label>
+                                    <input type="text" name="title" id="title" placeholder="Enter a title">
+
+                                    <label for="description">Description</label>
+                                    <textarea id="description" name="description" placeholder="Enter a description"></textarea>
+
+                                    <label for="date">Due date <span class="label-star">*</span></label>
+                                    <input type="date" name="date" id="date">
+                                </form>
+                            </div>
+
+                            <span class="form-separator"></span>
+
+
+                            <div class="form_2">
+                                <form class="form-details">
+
+                                    <p>Priority</p>
+                                    <div class="priority-section">
+                                        <li name="priority" value="urgent" class="priority-btn urgent">
+                                           <span>Urgent</span> <img class="btn-icon" src="../assets/icons/Prio alta.svg">
+                                        </li>
+                                        <li class="priority-btn medium">
+                                            <span>Medium</span> <img class="btn-icon" src="../assets/icons/Prio media.svg">
+                                        </li>
+                                        <li class="priority-btn low">
+                                            <span>Low</span> <img class="btn-icon" src="../assets/icons/Prio baja.svg">
+                                        </li>
+                                    </div>
+
+                                    <p>Assigned to</p>
+                                    <div class="multi-select">
+                                        <div class="multi-select-input" id="assignedInput">
+                                            <span id="assignedText">Select contacts to assign</span>
+                                            <span class="dropdown-arrow" id="dropdownArrow">▼</span>
+                                        </div>
+
+                                        <div class="multi-select-dropdown hidden" id="assignedDropdown"></div>
+                                    </div>
+
+                                    <label for="category">Category <span class="label-star">*</span></label>
+                                    
+                                    <div class="multi-select category-select">
+                                        <div class="multi-select-input" id="categoryInput">
+                                            <span id="categoryText">Select task category</span>
+                                            <span class="dropdown-arrow" id="categoryArrow">▼</span>
+                                        </div>
+                                        <div class="multi-select-dropdown hidden" id="categoryDropdown">
+                                            <div class="category-option" data-value="user">User Story</div>
+                                            <div class="category-option" data-value="tech">Technical Task</div>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="category" value="">
+
+                                    <label for="subtasks">Subtasks</label>
+                                    <div class="subtasks-input">
+                                        <input type="text" id="subtasks" placeholder="Add new subtask" aria-label="Subtask input" size="50">
+                                        <button type="button" id="clearSubtaskBtn" class="subtasks-clear-btn"
+                                            aria-label="Clear subtask input">
+                                            <img src="../assets/icons/iconoir_cancel.svg" alt="">
+                                        </button>
+                                        <button type="button" id="addSubtaskBtn" class="subtasks-add-btn"aria-label="Add subtask">
+                                            <img src="../assets/icons/check.svg" alt="">
+                                        </button>
+                                    </div>
+                                    <ul id="subtasksList" class="subtasks-list"></ul>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="content-wrepper">
+                        <div class="kpi-panel-task-footer">
+                            <p class="required-note"><span class="label-star">*</span>This field is required</p>
+                            <div class="create-task-button">
+                                <button type="button" class="primary-btn --primary-btn-cancel">
+                                    Clear <img class="btn-icon" src="../assets/icons/iconoir_cancel.svg">
+                                </button>
+
+                                <button type="button" id="createTaskBtn" class="primary-btn">
+                                    Create Task <img class="btn-icon" src="../assets/icons/check.svg">
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="modal-overlay" id="validationModal" aria-hidden="true">
+                <div class="modal-card" role="dialog" aria-labelledby="validationTitle" aria-modal="true">
+                    <div class="modal-header">
+                        <span class="modal-title" id="validationTitle">Missing required fields</span>
+                        <button type="button" class="modal-close" id="validationClose" aria-label="Close">×</button>
+                    </div>
+                    <div class="modal-body">
+                        Please fill all required fields.
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="primary-btn modal-ok" id="validationOk">OK</button>
+                    </div>
+                </div>
+            </div>
+
+            <script src="../javascript/idb-storage.js" defer></script>
+            <script src="../javascript/user-menu.js" defer></script>
+            <script src="../javascript/add_task.init-subtasks.js" defer></script>
+            <script src="../javascript/add_task.contacts-category.js" defer></script>
+            <script src="../javascript/add_task.tasks-storage.js" defer></script>
+            <script src="../javascript/add_task.helpers-validation.js" defer></script>
+            <script src="../javascript/animation.js" defer></script>
+            <script src="../javascript/login.js" defer></script>
+        </div>
+        </div>
+    </body>
+
+</html>

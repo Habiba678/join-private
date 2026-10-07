@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg" sizes="32x32" href="../assets/icons/logo.svg">
+    <link rel="stylesheet" href="../css/policy.css" />
+    <title>Privacy Policy</title>
+  </head>
+
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="logo">
+          <img src="../assets/icons/logo-white.svg" alt="Join" />
+        </div>
+
+        <nav class="menu">
+          <ul>
+            <li id="nav_li"><a href="./summary.html"><span class="menu-button"><img src="../assets/icons/summary-gray.svg" alt="" />Summary</span></a></li>
+            <li id="nav_li"><a href="./add_task.html"><span class="menu-button"><img src="../assets/icons/addTask-gray.svg" alt="" />Add Task</span></a></li>
+            <li id="nav_li"><a href="./board.html"><span class="menu-button"><img src="../assets/icons/board-gray.svg" alt="" />Board</span></a></li>
+            <li id="nav_li"><a href="./contact.html"><span class="menu-button"><img src="../assets/icons/contacts-gray.svg" alt="" />Contacts</span></a></li>
+            <li id="login-btn"><a href="../index.html"><span class="menu-button"><img src="../assets/icons/contacts-gray.svg" alt="" />Login</span></a></li>
+          </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+          <a href="./privacy_policy.html">Privacy Policy</a>
+          <a href="./legal_notice.html">Legal notice</a>
+        </div>
+      </aside>
+
+      <div class="cantainer">
+        <div class="main">
+          <header class="header">
+            <div class="content-wrepper-header">
+            <div class="header-title">Kanban Project Management Tool</div>
+            <div class="header-right">
+              <div class="header-user-area">
+                <button class="header-user" id="headerUserBtn" type="button" aria-expanded="false"
+                  aria-controls="userMenu" aria-label="Open user menu">
+                  G
+                </button>
+                <div class="user-menu" id="userMenu" role="menu" aria-hidden="true">
+                  <a class="user-menu-item" href="./legal_notice.html" role="menuitem">Legal Notice</a>
+                  <a class="user-menu-item" href="./privacy_policy.html" role="menuitem">Privacy Policy</a>
+                  <a class="user-menu-item menu-item--mobile" href="./help.html" role="menuitem">Help</a>
+                  <a class="user-menu-item" href="#" onclick="logout()" role="menuitem">Log out</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          </header>
+          <div class="content-wrepper">
+            <section class="policy-content">
+              <div class="policy-header">
+                <h1 class="policy-title">Privacy Policy</h1>
+                <span class="policy-divider"></span>
+              </div>
+
+              <div class="policy-body">
+                <section class="policy-section">
+                  <h2>Overview</h2>
+                  <p>Join is a Kanban project management tool. This Privacy Policy explains what information we collect,
+                    how we use it, and the choices you have. By using Join, you agree to the practices described here.
+                    Last updated: March 2, 2026.</p>
+                </section>
+
+                <section class="policy-section">
+                  <h2>Information We Collect</h2>
+                  <p>Information you provide: name, email address, and password when you register, plus any tasks,
+                    contacts, and project data you create in the app. Guest mode may store a temporary user label.</p>
+                  <p>Information stored on your device: we use cookies and browser storage (sessionStorage/localStorage)
+                    to keep you logged in and maintain your session.</p>
+                </section>
+
+                <section class="policy-section">
+                  <h2>How We Use Information</h2>
+                  <p>We use your information to create and manage your account, save and display your tasks and
+                    contacts, maintain session state, and provide core app functionality. We do not sell your personal
+                    data.</p>
+                </section>
+
+                <section class="policy-section">
+                  <h2>Where Data Is Stored</h2>
+                  <p>Join stores app data in a Firebase Realtime Database (Google Firebase) to enable persistence across
+                    sessions and devices.</p>
+                </section>
+
+                <section class="policy-section">
+                  <h2>Sharing</h2>
+                  <p>We share data only with service providers necessary to operate the app (such as Firebase hosting
+                    and database services). We do not share your data with third parties for marketing.</p>
+                </section>
+
+                <section class="policy-section">
+                  <h2>Security</h2>
+                  <p>We take reasonable measures to protect your data. However, no method of transmission or storage is
+                    completely secure, so we cannot guarantee absolute security.</p>
+                </section>
+
+                <section class="policy-section">
+                  <h2>Retention</h2>
+                  <p>Your data is kept as long as your account is active or as needed to provide the service. You can
+                    request deletion at any time.</p>
+                </section>
+
+                <section class="policy-section">
+                  <h2>Your Choices</h2>
+                  <p>You may access, update, or delete your information by contacting us. You can also clear cookies and
+                    browser storage to remove local session data.</p>
+                </section>
+
+                <section class="policy-section">
+                  <h2>Children's Privacy</h2>
+                  <p>Join is not intended for children under 13. We do not knowingly collect data from children.</p>
+                </section>
+
+                <section class="policy-section">
+                  <h2>Changes to This Policy</h2>
+                  <p>We may update this policy from time to time. The “Last updated” date above reflects the latest
+                    revision.</p>
+                </section>
+
+                <section class="policy-section">
+                  <h2>Contact</h2>
+                  <p>For questions or requests, contact us at [Contact Email].</p>
+                </section>
+              </div>
+            </section>
+          </div>
+        </div>
+        </div>
+      </div>
+      <script src="../javascript/user-menu.js" defer></script>
+      <script src="../javascript/login.js"></script>
+  </body>
+
+</html>

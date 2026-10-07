@@ -1,0 +1,74 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+}
+
+.content-wrepper {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  margin: 0 auto;
+  max-width: 1920px;
+}
+
+.login_page {
+  height: 80px;
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+  align-items: center;
+  position: relative;
+  z-index: 5;
+}
+
+header .logo_page {
+  height: auto;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+header .button-section {
+  margin-right: 15px;
+}
+
+main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 184px);
+}
+
+footer {
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.footer-content {
+  display: flex;
+  gap: 40px;
+}
+
+button {
+  height: 35px;
+  width: 95px;
+  font-size: large;
+  font-weight: bold;
+  border: unset;
+  color: white;
+  background-color: rgb(42, 54, 71);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.links {
+  text-decoration: none;
+  color: #2a3647;
+  font-size: 16px;
+}

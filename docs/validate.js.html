@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: validate.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: validate.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>let full_name = document.getElementById("name");
+let email = document.getElementById("mail");
+let password = document.getElementById("password");
+let confirmPassword = document.getElementById("confirm-password");
+let infoPassword = document.getElementById("info-password");
+let infoConfirmPassword = document.getElementById("info-password");
+let isAccept = document.getElementById("accept-id");
+let isAcceptPolice = document.getElementById("accept-police");
+let singupButton = document.getElementById("singup-button");
+let iconImgMail = document.getElementById("email-icon");
+let iconImg = document.getElementById("lock-icon");
+/**
+ * Input Name prüfen
+ */
+function validateFullname() {
+  switch (true) {
+    case full_name.value.trim() !== "":
+      full_name.classList.add("isValidate");
+      full_name.classList.remove("isInvaled");
+      break;
+    default:
+      full_name.classList.add("isInvaled");
+      full_name.classList.remove("isValidate");
+  }
+}
+/**
+ * Akzeptiert einen String und gibt true/false zurück
+ */
+function validateEmailRegEx(emailInput) {
+  const value =
+    typeof emailInput === "string"
+      ? emailInput
+      : (emailInput &amp;&amp; emailInput.value) || "";
+  const pattern =
+    /^(([^&lt;>()[\]\\.,;:\s@"]+(\.[^&lt;>()[\]\\.,;:\s@"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return pattern.test(String(value).toLowerCase());
+}
+/**
+ * Email prüfen
+ */
+function validateEmail() {
+  const isValid = validateEmailRegEx(email);
+  if (isValid) {
+    email.classList.add("isValidate");
+    if (!iconImgMail) {
+      let newIcon = document.createElement("img");
+      newIcon.classList.add("isInvaledMail");
+      newIcon.src = "./assets/icons/check-gray.svg";
+      email.appendChild(newIcon);
+      
+    } else {
+      iconImgMail.src = "./assets/icons/check-gray.svg";
+      email.classList.remove("isInvaled");
+      
+    }
+    } else {
+      email.classList.add("isInvaled");
+      email.classList.remove("isValidate");
+    }
+}
+/**
+ * Password prüfen
+ * returna true/false
+ */
+function updatePasswordIcon() {
+  if (password.value.length === 0) {
+    if (!iconImg) return;
+    iconImg.src = "./assets/icons/lock.png";
+    return;
+  }
+  if (!iconImg) return;
+  iconImg.src =
+    password.type === "text"
+      ? "./assets/icons/visibility.svg"
+      : "./assets/icons/visibility_off.svg";
+}
+
+toggleIconState();
+
+password.addEventListener("input", toggleIconState);
+password.addEventListener("click", (e) => {
+  if (!password.value) return;
+  const clickOnIcon = e.offsetX > password.offsetWidth - 35;
+  if (!clickOnIcon) return;
+  password.type = password.type === "password" ? "text" : "password";
+  password.classList.toggle("show-password");
+  updatePasswordIcon();
+});
+
+if (!confirmPassword) {
+  confirmPassword = "";
+} else {
+  confirmPassword.addEventListener("input", toggleIconState);
+  confirmPassword.addEventListener("click", (e) => {
+    if (!confirmPassword.value) return;
+
+    const clickOnIcon = e.offsetX > confirmPassword.offsetWidth - 35;
+    if (!clickOnIcon) return;
+    const hidden2 = confirmPassword.type === "password";
+    confirmPassword.type = hidden2 ? "text" : "password";
+    confirmPassword.classList.toggle("show-password", hidden2);
+  });
+}
+
+function toggleIconState() {
+  if (password.value.length === 0) {
+    password.classList.add("password-empty");
+    password.type = "password";
+    password.classList.remove("show-password");
+  } else {
+    password.classList.remove("password-empty");
+  }
+  updatePasswordIcon();
+}
+
+function validatePassword() {
+  switch (true) {
+    case password.value.length > 5:
+      password.classList.add("isValidate");
+      password.classList.add("visibility-off");
+      password.classList.remove("isInvaled");
+      infoPassword.style.display = "none";
+      break;
+    default:
+      infoPassword.style.display = "block";
+      password.classList.add("isInvaled");
+      password.classList.remove("isValidate");
+      password.classList.remove("visibility-off");
+      iconImg.src = "./assets/icons/lock.png";
+  }
+  updatePasswordIcon();
+}
+/**
+ *  Confirm Password prüfen
+ */
+function validateConfirmPassword() {
+  validatePassword(password, infoPassword);
+
+  switch (true) {
+    case password.value === confirmPassword.value &amp;&amp;
+      confirmPassword.value != "":
+      confirmPassword.classList.add("isValidate");
+      confirmPassword.classList.remove("isInvaled");
+      infoPassword.style.display = "none";
+      infoConfirmPassword.style.display = "none";
+      break;
+    default:
+      infoPassword.style.display = "block";
+      infoConfirmPassword.style.display = "block";
+      confirmPassword.classList.add("isInvaled");
+      confirmPassword.classList.remove("isValidate");
+  }
+}
+/**
+ *  Formular Validierung - Alle Felder prüfen
+ */
+function validateSingUpForm() {
+  switch (true) {
+    case isAccept.checked &amp;&amp;
+      full_name.value !== "" &amp;&amp;
+      email.value.length > 0 &amp;&amp;
+      password.value.length > 5 &amp;&amp;
+      password.value === confirmPassword.value:
+      singupButton.classList.remove("disebles-singup-button");
+      isAcceptPolice.classList.add("accept-police");
+      document.getElementById("singup-button").disabled = false;
+      break;
+    default:
+      isAcceptPolice.classList.remove("accept-police");
+      document.getElementById("singup-button").disabled = true;
+      break;
+  }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#BOARD_PAGE_URL">BOARD_PAGE_URL</a></li><li><a href="global.html#CONTACTS_STORAGE_KEY">CONTACTS_STORAGE_KEY</a></li><li><a href="global.html#DB_TASK_URL">DB_TASK_URL</a></li><li><a href="global.html#MOBILE_BP">MOBILE_BP</a></li><li><a href="global.html#STORAGE_KEY">STORAGE_KEY</a></li><li><a href="global.html#Todos_urgent">Todos_urgent</a></li><li><a href="global.html#activeSearchQuery">activeSearchQuery</a></li><li><a href="global.html#addDragLeaveHandler">addDragLeaveHandler</a></li><li><a href="global.html#addDragOverHandler">addDragOverHandler</a></li><li><a href="global.html#addDropHandler">addDropHandler</a></li><li><a href="global.html#addSubtasksFromInput">addSubtasksFromInput</a></li><li><a href="global.html#applySearchQuery">applySearchQuery</a></li><li><a href="global.html#attachZoneEvents">attachZoneEvents</a></li><li><a href="global.html#bindAddCardIcons">bindAddCardIcons</a></li><li><a href="global.html#bindDeleteConfirmBackdrop">bindDeleteConfirmBackdrop</a></li><li><a href="global.html#bindDeleteConfirmCancel">bindDeleteConfirmCancel</a></li><li><a href="global.html#bindDeleteConfirmEsc">bindDeleteConfirmEsc</a></li><li><a href="global.html#bindDeleteConfirmOk">bindDeleteConfirmOk</a></li><li><a href="global.html#bindDragEnd">bindDragEnd</a></li><li><a href="global.html#bindDragStart">bindDragStart</a></li><li><a href="global.html#bindDropZones">bindDropZones</a></li><li><a href="global.html#bindOverlayBackdrop">bindOverlayBackdrop</a></li><li><a href="global.html#bindOverlayCancel">bindOverlayCancel</a></li><li><a href="global.html#bindOverlayClose">bindOverlayClose</a></li><li><a href="global.html#bindOverlayDelete">bindOverlayDelete</a></li><li><a href="global.html#bindOverlayEdit">bindOverlayEdit</a></li><li><a href="global.html#bindOverlayEditForm">bindOverlayEditForm</a></li><li><a href="global.html#bindOverlayEsc">bindOverlayEsc</a></li><li><a href="global.html#bindOverlayOpenByCard">bindOverlayOpenByCard</a></li><li><a href="global.html#bindOverlaySave">bindOverlaySave</a></li><li><a href="global.html#bindTopAddButton">bindTopAddButton</a></li><li><a href="global.html#btnEl">btnEl</a></li><li><a href="global.html#buildModalData">buildModalData</a></li><li><a href="global.html#capitalize">capitalize</a></li><li><a href="global.html#clearDragOverClasses">clearDragOverClasses</a></li><li><a href="global.html#clearForm">clearForm</a></li><li><a href="global.html#closeAddTaskOverlay">closeAddTaskOverlay</a></li><li><a href="global.html#closeDeleteConfirm">closeDeleteConfirm</a></li><li><a href="global.html#closeModal">closeModal</a></li><li><a href="global.html#closeTaskOverlay">closeTaskOverlay</a></li><li><a href="global.html#closeValidationModal">closeValidationModal</a></li><li><a href="global.html#colorClassFor">colorClassFor</a></li><li><a href="global.html#createFromForm">createFromForm</a></li><li><a href="global.html#createPersonBadge">createPersonBadge</a></li><li><a href="global.html#createPersonRow">createPersonRow</a></li><li><a href="global.html#createPersonText">createPersonText</a></li><li><a href="global.html#createSubtaskCheckbox">createSubtaskCheckbox</a></li><li><a href="global.html#createSubtaskLabel">createSubtaskLabel</a></li><li><a href="global.html#createSubtaskRow">createSubtaskRow</a></li><li><a href="global.html#createTask">createTask</a></li><li><a href="global.html#deleteContact">deleteContact</a></li><li><a href="global.html#deleteTask">deleteTask</a></li><li><a href="global.html#el">el</a></li><li><a href="global.html#ensureUniqueColors">ensureUniqueColors</a></li><li><a href="global.html#enterOverlayEditMode">enterOverlayEditMode</a></li><li><a href="global.html#escapeHtml">escapeHtml</a></li><li><a href="global.html#exitOverlayEditMode">exitOverlayEditMode</a></li><li><a href="global.html#fetchDBNode">fetchDBNode</a></li><li><a href="global.html#fetchRegisterNode">fetchRegisterNode</a></li><li><a href="global.html#fillOverlayEditForm">fillOverlayEditForm</a></li><li><a href="global.html#findTaskById">findTaskById</a></li><li><a href="global.html#findTaskIndexById">findTaskIndexById</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#generateId">generateId</a></li><li><a href="global.html#getAddTaskRoot">getAddTaskRoot</a></li><li><a href="global.html#getAddTaskStatus">getAddTaskStatus</a></li><li><a href="global.html#getAssignedList">getAssignedList</a></li><li><a href="global.html#getAvatarColor">getAvatarColor</a></li><li><a href="global.html#getAwaitFeedback">getAwaitFeedback</a></li><li><a href="global.html#getCokkieCheck">getCokkieCheck</a></li><li><a href="global.html#getColumnStatus">getColumnStatus</a></li><li><a href="global.html#getContactColorClass">getContactColorClass</a></li><li><a href="global.html#getDeleteConfirmEls">getDeleteConfirmEls</a></li><li><a href="global.html#getDraggedCard">getDraggedCard</a></li><li><a href="global.html#getInitials">getInitials</a></li><li><a href="global.html#getInputValue">getInputValue</a></li><li><a href="global.html#getOverlayElements">getOverlayElements</a></li><li><a href="global.html#getOverlayViewContactColorClass">getOverlayViewContactColorClass</a></li><li><a href="global.html#getSelectedId">getSelectedId</a></li><li><a href="global.html#getTasks">getTasks</a></li><li><a href="global.html#getTasksDone">getTasksDone</a></li><li><a href="global.html#getTasksProgress">getTasksProgress</a></li><li><a href="global.html#getTasksTotal">getTasksTotal</a></li><li><a href="global.html#getUrgrentTodo">getUrgrentTodo</a></li><li><a href="global.html#goToAddTask">goToAddTask</a></li><li><a href="global.html#goToBoard">goToBoard</a></li><li><a href="global.html#goToSignup">goToSignup</a></li><li><a href="global.html#greetingText">greetingText</a></li><li><a href="global.html#groupKey">groupKey</a></li><li><a href="global.html#guastLogin">guastLogin</a></li><li><a href="global.html#handleClick">handleClick</a></li><li><a href="global.html#handleDeleteConfirmCancel">handleDeleteConfirmCancel</a></li><li><a href="global.html#handleDeleteConfirmOk">handleDeleteConfirmOk</a></li><li><a href="global.html#handleDrop">handleDrop</a></li><li><a href="global.html#handleMobileButtonsClick">handleMobileButtonsClick</a></li><li><a href="global.html#handleSubmit">handleSubmit</a></li><li><a href="global.html#hashPasswordWithSalt">hashPasswordWithSalt</a></li><li><a href="global.html#hashString">hashString</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#initAddTaskOverlay">initAddTaskOverlay</a></li><li><a href="global.html#initAssignedDropdown">initAssignedDropdown</a></li><li><a href="global.html#initDeleteConfirm">initDeleteConfirm</a></li><li><a href="global.html#initDragAndDrop">initDragAndDrop</a></li><li><a href="global.html#initOverlayEvents">initOverlayEvents</a></li><li><a href="global.html#initPriorityButtons">initPriorityButtons</a></li><li><a href="global.html#initRedirects">initRedirects</a></li><li><a href="global.html#initSearch">initSearch</a></li><li><a href="global.html#initSubtasks">initSubtasks</a></li><li><a href="global.html#initValidationModal">initValidationModal</a></li><li><a href="global.html#isBackdropOpen">isBackdropOpen</a></li><li><a href="global.html#isDragging">isDragging</a></li><li><a href="global.html#isEditingOverlay">isEditingOverlay</a></li><li><a href="global.html#isMobile">isMobile</a></li><li><a href="global.html#loadContacts">loadContacts</a></li><li><a href="global.html#loadContactsFromStorage">loadContactsFromStorage</a></li><li><a href="global.html#logIn">logIn</a></li><li><a href="global.html#logout">logout</a></li><li><a href="global.html#menuEl">menuEl</a></li><li><a href="global.html#months">months</a></li><li><a href="global.html#nearestUrgentDate">nearestUrgentDate</a></li><li><a href="global.html#normalize">normalize</a></li><li><a href="global.html#normalizeOverlayContact">normalizeOverlayContact</a></li><li><a href="global.html#normalizeSearchQuery">normalizeSearchQuery</a></li><li><a href="global.html#openAddTaskOverlay">openAddTaskOverlay</a></li><li><a href="global.html#openDeleteConfirm">openDeleteConfirm</a></li><li><a href="global.html#openModal">openModal</a></li><li><a href="global.html#openTaskOverlay">openTaskOverlay</a></li><li><a href="global.html#openValidationModal">openValidationModal</a></li><li><a href="global.html#openedTaskId">openedTaskId</a></li><li><a href="global.html#overlayPendingSubtasks">overlayPendingSubtasks</a></li><li><a href="global.html#overlaySelectedContacts">overlaySelectedContacts</a></li><li><a href="global.html#overlaySelectedPriority">overlaySelectedPriority</a></li><li><a href="global.html#overlayViewHashString">overlayViewHashString</a></li><li><a href="global.html#pendingDeleteId">pendingDeleteId</a></li><li><a href="global.html#pendingSubtasks">pendingSubtasks</a></li><li><a href="global.html#pickUniqueColorClass">pickUniqueColorClass</a></li><li><a href="global.html#populateAssignedContacts">populateAssignedContacts</a></li><li><a href="global.html#readOverlayEditForm">readOverlayEditForm</a></li><li><a href="global.html#regData">regData</a></li><li><a href="global.html#registrationSuccessRedirect">registrationSuccessRedirect</a></li><li><a href="global.html#removeModalNow">removeModalNow</a></li><li><a href="global.html#removeTaskById">removeTaskById</a></li><li><a href="global.html#renderContactsList">renderContactsList</a></li><li><a href="global.html#renderDetails">renderDetails</a></li><li><a href="global.html#renderOverlayAssigned">renderOverlayAssigned</a></li><li><a href="global.html#renderOverlaySubtasks">renderOverlaySubtasks</a></li><li><a href="global.html#renderSelectedContacts">renderSelectedContacts</a></li><li><a href="global.html#renderSubtasks">renderSubtasks</a></li><li><a href="global.html#resetAddTaskForm">resetAddTaskForm</a></li><li><a href="global.html#resetOverlayEditMode">resetOverlayEditMode</a></li><li><a href="global.html#saveContacts">saveContacts</a></li><li><a href="global.html#saveEdit">saveEdit</a></li><li><a href="global.html#saveOverlayEdits">saveOverlayEdits</a></li><li><a href="global.html#saveTasks">saveTasks</a></li><li><a href="global.html#selectAnimate">selectAnimate</a></li><li><a href="global.html#selectedContacts">selectedContacts</a></li><li><a href="global.html#selectedPriority">selectedPriority</a></li><li><a href="global.html#setDefaultPriority">setDefaultPriority</a></li><li><a href="global.html#setDeleteConfirmText">setDeleteConfirmText</a></li><li><a href="global.html#setEmptyStateForColumn">setEmptyStateForColumn</a></li><li><a href="global.html#setInputValue">setInputValue</a></li><li><a href="global.html#setOverlayCategory">setOverlayCategory</a></li><li><a href="global.html#setOverlayPriority">setOverlayPriority</a></li><li><a href="global.html#setOverlayTexts">setOverlayTexts</a></li><li><a href="global.html#setText">setText</a></li><li><a href="global.html#showDeleteConfirm">showDeleteConfirm</a></li><li><a href="global.html#showMobileDetails">showMobileDetails</a></li><li><a href="global.html#showMobileList">showMobileList</a></li><li><a href="global.html#showNoSubtasks">showNoSubtasks</a></li><li><a href="global.html#showOverlay">showOverlay</a></li><li><a href="global.html#showPleaseLoginMessageFromQuery">showPleaseLoginMessageFromQuery</a></li><li><a href="global.html#showRegNotice">showRegNotice</a></li><li><a href="global.html#showRegistrationMessageFromQuery">showRegistrationMessageFromQuery</a></li><li><a href="global.html#sortContacts">sortContacts</a></li><li><a href="global.html#syncMenuIds">syncMenuIds</a></li><li><a href="global.html#syncTasksFromDB">syncTasksFromDB</a></li><li><a href="global.html#toggleContact">toggleContact</a></li><li><a href="global.html#toggleOverlayEditState">toggleOverlayEditState</a></li><li><a href="global.html#updateBodyScrollLock">updateBodyScrollLock</a></li><li><a href="global.html#updateCardSubtaskProgress">updateCardSubtaskProgress</a></li><li><a href="global.html#updateEmptyStates">updateEmptyStates</a></li><li><a href="global.html#updatePasswordIcon">updatePasswordIcon</a></li><li><a href="global.html#updateStatusAfterDrop">updateStatusAfterDrop</a></li><li><a href="global.html#updateSubtaskDone">updateSubtaskDone</a></li><li><a href="global.html#updateTaskStatus">updateTaskStatus</a></li><li><a href="global.html#urgent_tasks">urgent_tasks</a></li><li><a href="global.html#urgent_tasks_day">urgent_tasks_day</a></li><li><a href="global.html#urgent_tasks_months">urgent_tasks_months</a></li><li><a href="global.html#urgent_tasks_year">urgent_tasks_year</a></li><li><a href="global.html#validateConfirmPassword">validateConfirmPassword</a></li><li><a href="global.html#validateEmail">validateEmail</a></li><li><a href="global.html#validateEmailRegEx">validateEmailRegEx</a></li><li><a href="global.html#validateFullname">validateFullname</a></li><li><a href="global.html#validateSingUpForm">validateSingUpForm</a></li><li><a href="global.html#verifyPassword">verifyPassword</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Feb 23 2026 20:40:50 GMT+0100 (Mitteleuropäische Normalzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

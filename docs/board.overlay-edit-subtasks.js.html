@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: board.overlay-edit-subtasks.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: board.overlay-edit-subtasks.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/** @typedef {{input: HTMLInputElement, btn: HTMLElement|null, clearBtn: HTMLElement|null, list: HTMLElement|null}} OverlaySubtaskElements */
+
+/** Initializes the overlay subtask input and list interactions. @returns {void} */
+function initOverlaySubtasks() {
+  const els = getOverlaySubtaskEls();
+  if (!els) return;
+  bindOverlaySubtaskInput(els);
+  bindOverlaySubtaskClear(els);
+  bindOverlaySubtaskList(els);
+  syncOverlaySubtaskButtons(els.input);
+}
+
+/** @returns {OverlaySubtaskElements|null} Overlay subtask DOM references. */
+function getOverlaySubtaskEls() {
+  const input = document.getElementById("taskEditSubtaskInput");
+  const btn = document.getElementById("taskEditAddSubtaskBtn");
+  const clearBtn = document.getElementById("taskEditClearSubtaskBtn");
+  const list = document.getElementById("taskEditSubtasksList");
+  if (!input) return null;
+  return { input: input, btn: btn, clearBtn: clearBtn, list: list };
+}
+
+/** @param {OverlaySubtaskElements} els Overlay subtask elements. @returns {void} */
+function bindOverlaySubtaskInput(els) {
+  if (els.btn) {
+    els.btn.addEventListener("click", addOverlaySubtasksFromInput);
+  }
+  els.input.addEventListener("keydown", function (e) {
+    handleOverlaySubtaskEnter(e);
+  });
+  els.input.addEventListener("input", function () {
+    syncOverlaySubtaskButtons(els.input);
+  });
+}
+
+/** @param {KeyboardEvent} e Keyboard event from the subtask input. @returns {void} */
+function handleOverlaySubtaskEnter(e) {
+  if (e.key !== "Enter") return;
+  e.preventDefault();
+  addOverlaySubtasksFromInput();
+}
+
+/** @param {OverlaySubtaskElements} els Overlay subtask elements. @returns {void} */
+function bindOverlaySubtaskClear(els) {
+  if (!els.clearBtn) return;
+  els.clearBtn.addEventListener("click", function () {
+    clearOverlaySubtaskInput(els.input);
+  });
+}
+
+/** @param {HTMLInputElement} input Overlay subtask input. @returns {void} */
+function clearOverlaySubtaskInput(input) {
+  input.value = "";
+  input.focus();
+  syncOverlaySubtaskButtons(input);
+}
+
+/** @param {HTMLInputElement} input Overlay subtask input. @returns {void} */
+function syncOverlaySubtaskButtons(input) {
+  const wrap = input.closest(".subtasks-input");
+  if (!wrap) return;
+  const hasValue = !!input.value.trim();
+  wrap.classList.toggle("is-empty", !hasValue);
+}
+
+/** @param {OverlaySubtaskElements} els Overlay subtask elements. @returns {void} */
+function bindOverlaySubtaskList(els) {
+  if (!els.list) return;
+  els.list.addEventListener("click", function (e) {
+    handleOverlaySubtaskListClick(e);
+  });
+}
+
+/** @param {MouseEvent} e Click event from the subtask list. @returns {void} */
+function handleOverlaySubtaskListClick(e) {
+  const item = e.target.closest(".subtasks-item");
+  if (!item) return;
+  if (handleSubtaskRemove(e, item)) return;
+  if (handleSubtaskEdit(e, item)) return;
+  if (handleSubtaskSave(e, item)) return;
+  handleSubtaskCancel(e);
+}
+
+/** @param {MouseEvent} e Click event from the subtask list. @param {HTMLElement} item Subtask row element. @returns {boolean} `true` when the action was handled. */
+function handleSubtaskRemove(e, item) {
+  const remove = e.target.closest(".subtasks-remove");
+  if (!remove) return false;
+  const index = parseInt(remove.dataset.index, 10);
+  if (!isNaN(index)) {
+    overlayPendingSubtasks.splice(index, 1);
+    renderOverlaySubtasksList();
+  }
+  return true;
+}
+
+/** @param {MouseEvent} e Click event from the subtask list. @param {HTMLElement} item Subtask row element. @returns {boolean} `true` when the action was handled. */
+function handleSubtaskEdit(e, item) {
+  const edit = e.target.closest(".subtasks-edit");
+  if (!edit) return false;
+  const index = parseInt(edit.dataset.index, 10);
+  if (isNaN(index) || !overlayPendingSubtasks[index]) return true;
+  const currentTitle = overlayPendingSubtasks[index].title || "";
+  startOverlayInlineSubtaskEdit(item, index, currentTitle);
+  return true;
+}
+
+/** @param {MouseEvent} e Click event from the subtask list. @param {HTMLElement} item Subtask row element. @returns {boolean} `true` when the action was handled. */
+function handleSubtaskSave(e, item) {
+  const save = e.target.closest(".subtasks-save-edit");
+  if (!save) return false;
+  const index = parseInt(save.dataset.index, 10);
+  if (isNaN(index) || !overlayPendingSubtasks[index]) return true;
+  const input = item.querySelector(".subtasks-edit-input");
+  if (!input) return true;
+  const trimmed = input.value.trim();
+  if (!trimmed) return renderOverlaySubtasksList(), true;
+  overlayPendingSubtasks[index].title = trimmed;
+  renderOverlaySubtasksList();
+  return true;
+}
+
+/** @param {MouseEvent} e Click event from the subtask list. @returns {boolean} `true` when the action was handled. */
+function handleSubtaskCancel(e) {
+  const cancel = e.target.closest(".subtasks-cancel-edit");
+  if (!cancel) return false;
+  renderOverlaySubtasksList();
+  return true;
+}
+
+/** Parses and appends new subtasks from the input value. @returns {void} */
+function addOverlaySubtasksFromInput() {
+  const input = document.getElementById("taskEditSubtaskInput");
+  if (!input || !input.value.trim()) return;
+  input.value
+    .split(/[,\n;]+/)
+    .map(function (t) {
+      return t.trim();
+    })
+    .forEach(function (title) {
+      if (!title) return;
+      overlayPendingSubtasks.push({ title: title, done: false });
+    });
+  input.value = "";
+  renderOverlaySubtasksList();
+}
+
+/** Re-renders the editable subtask list. @returns {void} */
+function renderOverlaySubtasksList() {
+  const list = document.getElementById("taskEditSubtasksList");
+  if (!list) return;
+  list.innerHTML = "";
+  for (let i = 0; i &lt; overlayPendingSubtasks.length; i++) {
+    list.innerHTML +=
+      '&lt;li class="subtasks-item">&lt;span>' +
+      overlayPendingSubtasks[i].title +
+      '&lt;/span>&lt;div class="subtasks-actions">&lt;button class="subtasks-edit" data-index="' +
+      i +
+      '" >&lt;img class="subtasks-icon" src="../assets/icons/edit-gray.svg" alt="Edit subtask">&lt;/button>&lt;span class="subtasks-separator">&lt;/span>&lt;button class="subtasks-remove" data-index="' +
+      i +
+      '">&lt;img class="subtasks-icon"src="../assets/icons/delete.svg" alt="Remove subtask">&lt;/button>&lt;/div>&lt;/li > ';
+  }
+}
+
+/** @param {BoardTask} task Task whose subtasks should populate the form. @returns {void} */
+function setOverlaySubtasksFromTask(task) {
+  overlayPendingSubtasks = Array.isArray(task.subtasks)
+    ? task.subtasks.map(function (s) {
+        return { title: s.title, done: !!s.done };
+      })
+    : [];
+  renderOverlaySubtasksList();
+}
+
+/** @param {BoardContact|{id?:string,email?:string,name?:string,colorClass?:string}} contact Contact-like object. @returns {string} Avatar color class. */
+function getOverlayEditContactColorClass(contact) {
+  if (typeof getContactColorClass === "function") return getContactColorClass(contact);
+  if (contact &amp;&amp; contact.colorClass) return contact.colorClass;
+  const seed = contact?.id || contact?.email || contact?.name || "";
+  return "avatar-color-" + (overlayEditHashString(seed) % 12);
+}
+
+/** @param {string} str Seed string. @returns {number} Stable positive hash value. */
+function overlayEditHashString(str) {
+  let h = 0;
+  const s = String(str || "");
+  for (let i = 0; i &lt; s.length; i++) h = ((h &lt;&lt; 5) - h + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#CONTACTS_STORAGE_KEY">CONTACTS_STORAGE_KEY</a></li><li><a href="global.html#DB_TASK_URL">DB_TASK_URL</a></li><li><a href="global.html#STORAGE_KEY">STORAGE_KEY</a></li><li><a href="global.html#TOUCH_DRAG_THRESHOLD">TOUCH_DRAG_THRESHOLD</a></li><li><a href="global.html#activateTouchDrag">activateTouchDrag</a></li><li><a href="global.html#activeSearchQuery">activeSearchQuery</a></li><li><a href="global.html#addAssignedByName">addAssignedByName</a></li><li><a href="global.html#addDragLeaveHandler">addDragLeaveHandler</a></li><li><a href="global.html#addDragOverHandler">addDragOverHandler</a></li><li><a href="global.html#addDropHandler">addDropHandler</a></li><li><a href="global.html#addOverlaySubtasksFromInput">addOverlaySubtasksFromInput</a></li><li><a href="global.html#appendOverlayContactRow">appendOverlayContactRow</a></li><li><a href="global.html#appendOverlayPriorityIcon">appendOverlayPriorityIcon</a></li><li><a href="global.html#appendOverlayPriorityText">appendOverlayPriorityText</a></li><li><a href="global.html#applyAssignedSelections">applyAssignedSelections</a></li><li><a href="global.html#applyOverlayEditValues">applyOverlayEditValues</a></li><li><a href="global.html#applySearchQuery">applySearchQuery</a></li><li><a href="global.html#attachZoneEvents">attachZoneEvents</a></li><li><a href="global.html#bindAddCardIcons">bindAddCardIcons</a></li><li><a href="global.html#bindDeleteConfirmBackdrop">bindDeleteConfirmBackdrop</a></li><li><a href="global.html#bindDeleteConfirmCancel">bindDeleteConfirmCancel</a></li><li><a href="global.html#bindDeleteConfirmEsc">bindDeleteConfirmEsc</a></li><li><a href="global.html#bindDeleteConfirmOk">bindDeleteConfirmOk</a></li><li><a href="global.html#bindDragEnd">bindDragEnd</a></li><li><a href="global.html#bindDragStart">bindDragStart</a></li><li><a href="global.html#bindDropZones">bindDropZones</a></li><li><a href="global.html#bindOverlayAssignedArrow">bindOverlayAssignedArrow</a></li><li><a href="global.html#bindOverlayAssignedInput">bindOverlayAssignedInput</a></li><li><a href="global.html#bindOverlayAssignedOutside">bindOverlayAssignedOutside</a></li><li><a href="global.html#bindOverlayBackdrop">bindOverlayBackdrop</a></li><li><a href="global.html#bindOverlayClose">bindOverlayClose</a></li><li><a href="global.html#bindOverlayDelete">bindOverlayDelete</a></li><li><a href="global.html#bindOverlayEdit">bindOverlayEdit</a></li><li><a href="global.html#bindOverlayEditForm">bindOverlayEditForm</a></li><li><a href="global.html#bindOverlayEsc">bindOverlayEsc</a></li><li><a href="global.html#bindOverlayOpenByCard">bindOverlayOpenByCard</a></li><li><a href="global.html#bindOverlaySave">bindOverlaySave</a></li><li><a href="global.html#bindOverlaySubtaskClear">bindOverlaySubtaskClear</a></li><li><a href="global.html#bindOverlaySubtaskInput">bindOverlaySubtaskInput</a></li><li><a href="global.html#bindOverlaySubtaskList">bindOverlaySubtaskList</a></li><li><a href="global.html#bindSearchEscape">bindSearchEscape</a></li><li><a href="global.html#bindSearchIcon">bindSearchIcon</a></li><li><a href="global.html#bindSearchInput">bindSearchInput</a></li><li><a href="global.html#bindTopAddButton">bindTopAddButton</a></li><li><a href="global.html#bindTouchDrag">bindTouchDrag</a></li><li><a href="global.html#buildAssignedAvatarsHtml">buildAssignedAvatarsHtml</a></li><li><a href="global.html#buildAvatarListHtml">buildAvatarListHtml</a></li><li><a href="global.html#buildAvatarRemainderHtml">buildAvatarRemainderHtml</a></li><li><a href="global.html#buildCardFooterHtml">buildCardFooterHtml</a></li><li><a href="global.html#buildCardFooterPriorityHtml">buildCardFooterPriorityHtml</a></li><li><a href="global.html#buildCardHtml">buildCardHtml</a></li><li><a href="global.html#buildCardProgressElement">buildCardProgressElement</a></li><li><a href="global.html#buildCardSubtaskProgressHtml">buildCardSubtaskProgressHtml</a></li><li><a href="global.html#buildContactsById">buildContactsById</a></li><li><a href="global.html#buildContactsByNameMap">buildContactsByNameMap</a></li><li><a href="global.html#buildEditedTaskFromForm">buildEditedTaskFromForm</a></li><li><a href="global.html#buildOverlayAvatarsHtml">buildOverlayAvatarsHtml</a></li><li><a href="global.html#buildOverlayContactRow">buildOverlayContactRow</a></li><li><a href="global.html#buildOverlayEditContext">buildOverlayEditContext</a></li><li><a href="global.html#buildOverlayMoreHtml">buildOverlayMoreHtml</a></li><li><a href="global.html#buildOverlaySelectedContactsView">buildOverlaySelectedContactsView</a></li><li><a href="global.html#buildPriorityIconHtml">buildPriorityIconHtml</a></li><li><a href="global.html#buildSingleAvatarHtml">buildSingleAvatarHtml</a></li><li><a href="global.html#buildTaskSearchTitle">buildTaskSearchTitle</a></li><li><a href="global.html#buildTasksMap">buildTasksMap</a></li><li><a href="global.html#capitalize">capitalize</a></li><li><a href="global.html#clearAllCards">clearAllCards</a></li><li><a href="global.html#clearDragOverClasses">clearDragOverClasses</a></li><li><a href="global.html#clearOverlaySubtaskInput">clearOverlaySubtaskInput</a></li><li><a href="global.html#closeAddTaskOverlay">closeAddTaskOverlay</a></li><li><a href="global.html#closeDeleteConfirm">closeDeleteConfirm</a></li><li><a href="global.html#closeOverlayAssignedDropdown">closeOverlayAssignedDropdown</a></li><li><a href="global.html#closeTaskOverlay">closeTaskOverlay</a></li><li><a href="global.html#collectOverlayElements">collectOverlayElements</a></li><li><a href="global.html#colorClassForSeed">colorClassForSeed</a></li><li><a href="global.html#countDoneSubtasks">countDoneSubtasks</a></li><li><a href="global.html#createCardElement">createCardElement</a></li><li><a href="global.html#createOverlaySubtaskCancelBtn">createOverlaySubtaskCancelBtn</a></li><li><a href="global.html#createOverlaySubtaskEditActions">createOverlaySubtaskEditActions</a></li><li><a href="global.html#createOverlaySubtaskEditInput">createOverlaySubtaskEditInput</a></li><li><a href="global.html#createOverlaySubtaskSaveBtn">createOverlaySubtaskSaveBtn</a></li><li><a href="global.html#createOverlaySubtaskSeparator">createOverlaySubtaskSeparator</a></li><li><a href="global.html#createPersonBadge">createPersonBadge</a></li><li><a href="global.html#createPersonRow">createPersonRow</a></li><li><a href="global.html#createPersonText">createPersonText</a></li><li><a href="global.html#createSubtaskCheckbox">createSubtaskCheckbox</a></li><li><a href="global.html#createSubtaskLabel">createSubtaskLabel</a></li><li><a href="global.html#createSubtaskRow">createSubtaskRow</a></li><li><a href="global.html#deleteTask">deleteTask</a></li><li><a href="global.html#ensureCardProgress">ensureCardProgress</a></li><li><a href="global.html#ensureTouchDragActive">ensureTouchDragActive</a></li><li><a href="global.html#enterOverlayEditMode">enterOverlayEditMode</a></li><li><a href="global.html#escapeHtml">escapeHtml</a></li><li><a href="global.html#exitOverlayEditMode">exitOverlayEditMode</a></li><li><a href="global.html#exitOverlayEditModeSafe">exitOverlayEditModeSafe</a></li><li><a href="global.html#extractNodeFromArray">extractNodeFromArray</a></li><li><a href="global.html#extractNodeFromEntry">extractNodeFromEntry</a></li><li><a href="global.html#extractNodeFromObject">extractNodeFromObject</a></li><li><a href="global.html#extractNodeFromRoot">extractNodeFromRoot</a></li><li><a href="global.html#fetchDBNode">fetchDBNode</a></li><li><a href="global.html#fetchDbRoot">fetchDbRoot</a></li><li><a href="global.html#fetchNodeFromRoot">fetchNodeFromRoot</a></li><li><a href="global.html#fillOverlayEditForm">fillOverlayEditForm</a></li><li><a href="global.html#finalizeBoardUi">finalizeBoardUi</a></li><li><a href="global.html#findTaskById">findTaskById</a></li><li><a href="global.html#findTaskIndexById">findTaskIndexById</a></li><li><a href="global.html#focusAndSearch">focusAndSearch</a></li><li><a href="global.html#focusOverlaySubtaskEditInput">focusOverlaySubtaskEditInput</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#getActiveSearchQuery">getActiveSearchQuery</a></li><li><a href="global.html#getAssignedContactsForCard">getAssignedContactsForCard</a></li><li><a href="global.html#getAssignedList">getAssignedList</a></li><li><a href="global.html#getAssignedValue">getAssignedValue</a></li><li><a href="global.html#getAvatarColor">getAvatarColor</a></li><li><a href="global.html#getCardByTaskId">getCardByTaskId</a></li><li><a href="global.html#getCardsContainer">getCardsContainer</a></li><li><a href="global.html#getColumnStatus">getColumnStatus</a></li><li><a href="global.html#getContactColorClass">getContactColorClass</a></li><li><a href="global.html#getContactsById">getContactsById</a></li><li><a href="global.html#getContactsByName">getContactsByName</a></li><li><a href="global.html#getDeleteConfirmEls">getDeleteConfirmEls</a></li><li><a href="global.html#getDraggedCard">getDraggedCard</a></li><li><a href="global.html#getFilteredTasks">getFilteredTasks</a></li><li><a href="global.html#getInitials">getInitials</a></li><li><a href="global.html#getInputValue">getInputValue</a></li><li><a href="global.html#getLabelClass">getLabelClass</a></li><li><a href="global.html#getLabelText">getLabelText</a></li><li><a href="global.html#getLocalDateInputValue">getLocalDateInputValue</a></li><li><a href="global.html#getNormalizeSearchFn">getNormalizeSearchFn</a></li><li><a href="global.html#getOverlayAssignedDropdownEls">getOverlayAssignedDropdownEls</a></li><li><a href="global.html#getOverlayContactRowHtml">getOverlayContactRowHtml</a></li><li><a href="global.html#getOverlayEditContactColorClass">getOverlayEditContactColorClass</a></li><li><a href="global.html#getOverlayElements">getOverlayElements</a></li><li><a href="global.html#getOverlaySubtaskEls">getOverlaySubtaskEls</a></li><li><a href="global.html#getOverlayViewContactColorClass">getOverlayViewContactColorClass</a></li><li><a href="global.html#getPriorityIcon">getPriorityIcon</a></li><li><a href="global.html#getPriorityText">getPriorityText</a></li><li><a href="global.html#getRawSubtasks">getRawSubtasks</a></li><li><a href="global.html#getRemoteTasksUrl">getRemoteTasksUrl</a></li><li><a href="global.html#getTaskIdForMap">getTaskIdForMap</a></li><li><a href="global.html#getTaskPriority">getTaskPriority</a></li><li><a href="global.html#getTaskSubtasks">getTaskSubtasks</a></li><li><a href="global.html#getTasks">getTasks</a></li><li><a href="global.html#goToAddTask">goToAddTask</a></li><li><a href="global.html#handleDeleteConfirmCancel">handleDeleteConfirmCancel</a></li><li><a href="global.html#handleDeleteConfirmOk">handleDeleteConfirmOk</a></li><li><a href="global.html#handleDrop">handleDrop</a></li><li><a href="global.html#handleOverlaySubtaskEnter">handleOverlaySubtaskEnter</a></li><li><a href="global.html#handleOverlaySubtaskListClick">handleOverlaySubtaskListClick</a></li><li><a href="global.html#handleSearchEscape">handleSearchEscape</a></li><li><a href="global.html#handleSubtaskCancel">handleSubtaskCancel</a></li><li><a href="global.html#handleSubtaskEdit">handleSubtaskEdit</a></li><li><a href="global.html#handleSubtaskRemove">handleSubtaskRemove</a></li><li><a href="global.html#handleSubtaskSave">handleSubtaskSave</a></li><li><a href="global.html#handleTouchDrop">handleTouchDrop</a></li><li><a href="global.html#hasTouchDragThreshold">hasTouchDragThreshold</a></li><li><a href="global.html#hashStringLocal">hashStringLocal</a></li><li><a href="global.html#initAddTaskOverlay">initAddTaskOverlay</a></li><li><a href="global.html#initBoardUi">initBoardUi</a></li><li><a href="global.html#initDeleteConfirm">initDeleteConfirm</a></li><li><a href="global.html#initDragAndDrop">initDragAndDrop</a></li><li><a href="global.html#initOverlayAssignedDropdown">initOverlayAssignedDropdown</a></li><li><a href="global.html#initOverlayEditWidgets">initOverlayEditWidgets</a></li><li><a href="global.html#initOverlayEvents">initOverlayEvents</a></li><li><a href="global.html#initOverlayPriorityButtons">initOverlayPriorityButtons</a></li><li><a href="global.html#initOverlaySubtasks">initOverlaySubtasks</a></li><li><a href="global.html#initRedirects">initRedirects</a></li><li><a href="global.html#initSearch">initSearch</a></li><li><a href="global.html#isBackdropOpen">isBackdropOpen</a></li><li><a href="global.html#isDragging">isDragging</a></li><li><a href="global.html#isEditingOverlay">isEditingOverlay</a></li><li><a href="global.html#lastTouchClientX">lastTouchClientX</a></li><li><a href="global.html#lastTouchClientY">lastTouchClientY</a></li><li><a href="global.html#loadContacts">loadContacts</a></li><li><a href="global.html#normalizeAssigned">normalizeAssigned</a></li><li><a href="global.html#normalizeAssignedArray">normalizeAssignedArray</a></li><li><a href="global.html#normalizeContactsData">normalizeContactsData</a></li><li><a href="global.html#normalizeOverlayContact">normalizeOverlayContact</a></li><li><a href="global.html#normalizeSearchQuery">normalizeSearchQuery</a></li><li><a href="global.html#normalizeSubtasks">normalizeSubtasks</a></li><li><a href="global.html#onBoardReady">onBoardReady</a></li><li><a href="global.html#onTouchEnd">onTouchEnd</a></li><li><a href="global.html#onTouchMove">onTouchMove</a></li><li><a href="global.html#onTouchStart">onTouchStart</a></li><li><a href="global.html#openAddTaskOverlay">openAddTaskOverlay</a></li><li><a href="global.html#openDeleteConfirm">openDeleteConfirm</a></li><li><a href="global.html#openOverlayAssignedDropdown">openOverlayAssignedDropdown</a></li><li><a href="global.html#openTaskOverlay">openTaskOverlay</a></li><li><a href="global.html#openedTaskId">openedTaskId</a></li><li><a href="global.html#overlayEditHashString">overlayEditHashString</a></li><li><a href="global.html#overlayPendingSubtasks">overlayPendingSubtasks</a></li><li><a href="global.html#overlaySelectedContacts">overlaySelectedContacts</a></li><li><a href="global.html#overlaySelectedPriority">overlaySelectedPriority</a></li><li><a href="global.html#overlayViewHashString">overlayViewHashString</a></li><li><a href="global.html#pendingDeleteId">pendingDeleteId</a></li><li><a href="global.html#persistTasksToIdb">persistTasksToIdb</a></li><li><a href="global.html#populateOverlayAssignedContacts">populateOverlayAssignedContacts</a></li><li><a href="global.html#putTasksToRemote">putTasksToRemote</a></li><li><a href="global.html#readContactsFromIdb">readContactsFromIdb</a></li><li><a href="global.html#readOverlayEditForm">readOverlayEditForm</a></li><li><a href="global.html#refreshBoardCards">refreshBoardCards</a></li><li><a href="global.html#refreshOverlayView">refreshOverlayView</a></li><li><a href="global.html#removeCardProgress">removeCardProgress</a></li><li><a href="global.html#removeTaskById">removeTaskById</a></li><li><a href="global.html#renderAllTasks">renderAllTasks</a></li><li><a href="global.html#renderBoardFromStorage">renderBoardFromStorage</a></li><li><a href="global.html#renderOverlayAssigned">renderOverlayAssigned</a></li><li><a href="global.html#renderOverlaySelectedContacts">renderOverlaySelectedContacts</a></li><li><a href="global.html#renderOverlaySubtasks">renderOverlaySubtasks</a></li><li><a href="global.html#renderOverlaySubtasksList">renderOverlaySubtasksList</a></li><li><a href="global.html#renderTaskCard">renderTaskCard</a></li><li><a href="global.html#resetOverlayAssignedDropdown">resetOverlayAssignedDropdown</a></li><li><a href="global.html#resetOverlayEditMode">resetOverlayEditMode</a></li><li><a href="global.html#resetOverlayPriorityEl">resetOverlayPriorityEl</a></li><li><a href="global.html#resolveAssignedContacts">resolveAssignedContacts</a></li><li><a href="global.html#resolveAssignedEntry">resolveAssignedEntry</a></li><li><a href="global.html#resolveAssignedFromContacts">resolveAssignedFromContacts</a></li><li><a href="global.html#resolveAssignedList">resolveAssignedList</a></li><li><a href="global.html#saveOverlayEdits">saveOverlayEdits</a></li><li><a href="global.html#saveTasks">saveTasks</a></li><li><a href="global.html#setDeleteConfirmText">setDeleteConfirmText</a></li><li><a href="global.html#setEmptyStateForColumn">setEmptyStateForColumn</a></li><li><a href="global.html#setInputValue">setInputValue</a></li><li><a href="global.html#setOverlayAssignedFromTask">setOverlayAssignedFromTask</a></li><li><a href="global.html#setOverlayAssignedText">setOverlayAssignedText</a></li><li><a href="global.html#setOverlayCategory">setOverlayCategory</a></li><li><a href="global.html#setOverlayDueMin">setOverlayDueMin</a></li><li><a href="global.html#setOverlayPriority">setOverlayPriority</a></li><li><a href="global.html#setOverlayPriorityButtons">setOverlayPriorityButtons</a></li><li><a href="global.html#setOverlaySubtasksFromTask">setOverlaySubtasksFromTask</a></li><li><a href="global.html#setOverlayTexts">setOverlayTexts</a></li><li><a href="global.html#setText">setText</a></li><li><a href="global.html#showDeleteConfirm">showDeleteConfirm</a></li><li><a href="global.html#showNoSubtasks">showNoSubtasks</a></li><li><a href="global.html#showOverlay">showOverlay</a></li><li><a href="global.html#startOverlayInlineSubtaskEdit">startOverlayInlineSubtaskEdit</a></li><li><a href="global.html#syncBoardData">syncBoardData</a></li><li><a href="global.html#syncContactsFromDB">syncContactsFromDB</a></li><li><a href="global.html#syncOverlaySubtaskButtons">syncOverlaySubtaskButtons</a></li><li><a href="global.html#syncTasksFromDB">syncTasksFromDB</a></li><li><a href="global.html#syncTasksToRemote">syncTasksToRemote</a></li><li><a href="global.html#taskMatchesQuery">taskMatchesQuery</a></li><li><a href="global.html#toggleOverlayAssignedDropdown">toggleOverlayAssignedDropdown</a></li><li><a href="global.html#toggleOverlayContact">toggleOverlayContact</a></li><li><a href="global.html#toggleOverlayEditState">toggleOverlayEditState</a></li><li><a href="global.html#touchDragActive">touchDragActive</a></li><li><a href="global.html#touchDragCard">touchDragCard</a></li><li><a href="global.html#touchDragId">touchDragId</a></li><li><a href="global.html#touchDragStartX">touchDragStartX</a></li><li><a href="global.html#touchDragStartY">touchDragStartY</a></li><li><a href="global.html#tryFetchNode">tryFetchNode</a></li><li><a href="global.html#trySaveContactsToIdb">trySaveContactsToIdb</a></li><li><a href="global.html#trySyncContacts">trySyncContacts</a></li><li><a href="global.html#trySyncTasks">trySyncTasks</a></li><li><a href="global.html#updateBodyScrollLock">updateBodyScrollLock</a></li><li><a href="global.html#updateCardProgressDisplay">updateCardProgressDisplay</a></li><li><a href="global.html#updateCardSubtaskProgress">updateCardSubtaskProgress</a></li><li><a href="global.html#updateEmptyStates">updateEmptyStates</a></li><li><a href="global.html#updateOverlayAssignedCheckboxes">updateOverlayAssignedCheckboxes</a></li><li><a href="global.html#updateSearchEmptyState">updateSearchEmptyState</a></li><li><a href="global.html#updateStatusAfterDrop">updateStatusAfterDrop</a></li><li><a href="global.html#updateSubtaskDone">updateSubtaskDone</a></li><li><a href="global.html#updateTaskStatus">updateTaskStatus</a></li><li><a href="global.html#updateTouchDragOver">updateTouchDragOver</a></li><li><a href="global.html#updateTouchPosition">updateTouchPosition</a></li><li><a href="global.html#waitForIdbReady">waitForIdbReady</a></li><li><a href="global.html#warnOverlayMissing">warnOverlayMissing</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Mar 14 2026 16:14:44 GMT+0100 (Central European Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

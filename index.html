@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg" sizes="32x32" href="./assets/icons/logo.svg">
+    <title>Login</title>
+    <link rel="stylesheet" href="./css/start_page.css">
+</head>
+
+<body>
+    <div class="content-wrepper">
+    <header>
+        <figure class="logo">
+            <img class="logo_page" src="./assets/icons/logo.svg" alt="Logo">
+        </figure>
+
+        <section class="button-section button-section--desktop">
+            <a class="links" href="./subpages/regist.html">Not a Join User?</a>
+            <button type="button" class="signup" onclick="goToSignup()">Sign up</button>
+        </section>
+       
+    </header>
+    <main>
+        <form class="login-form">
+            <div class="login-message">
+                <p id="login-message"></p> 
+                <p id="reg-msg" class=""></p>
+            </div>
+            <h1>Login</h1>
+
+            <div class="input-wrapper">
+                <input id="mail" onchange="validateEmail()" type="email" placeholder="Email" >
+                <img src="./assets/icons/mail.png" alt="email icon" id="email-icon" class="input-icon">
+            </div>
+                <span class="info-email" id="info-email">Please enter a valid email.</span>
+            <div class="input-wrapper">
+                <input id="password" onchange="validatePassword()" class="" type="password" placeholder="Password" autocomplete="off" >
+                <img id="lock-icon" src="./assets/icons/lock.png" alt="password icon" class="input-icon">
+            </div>
+            <span class="info-password" id="info-password">Password must be at least 6 characters.</span>
+            <span class="info-password" id="info-no-match">Check your email and password.</span>
+
+            <div class="button-group">
+                <button type="button" onclick="logIn()" class="login-btn">Log In</button>
+                <button onclick="guastLogin()" type="button" class="guest-btn">Guest Log In</button>
+            </div>
+        </form>
+        <section class="button-section button-section--mobile">
+            <a class="links" href="./subpages/regist.html">Not a Join User?</a>
+            <button type="button" class="signup" onclick="goToSignup()">Sign up</button>
+        </section>
+    </main>
+    <footer>
+        <section class="footer-content">
+            <a class="links" href="./subpages/privacy_policy.html">Privacy Policy</a>
+            <a class="links" href="./subpages/legal_notice.html">Legal notice</a>
+        </section>
+    </footer>
+</div>
+<script src="./javascript/validate.js"></script>
+<script src="./javascript/animation.js"></script>
+<script src="./javascript/login.js"></script>
+<script src="./javascript/regist.js"></script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: board.overlay-view-subtasks.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: board.overlay-view-subtasks.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/** @param {BoardTask} task Task whose subtasks should be rendered. @returns {void} */
+function renderOverlaySubtasks(task) {
+  const subtasksWrap = document.getElementById("taskOverlaySubtasks");
+  if (!subtasksWrap) return;
+  subtasksWrap.innerHTML = "";
+  const subs = Array.isArray(task.subtasks) ? task.subtasks : [];
+  if (!subs.length) return showNoSubtasks(subtasksWrap);
+  for (let i = 0; i &lt; subs.length; i++) {
+    subtasksWrap.appendChild(createSubtaskRow(subs[i], i, task.id));
+  }
+}
+
+/** @param {HTMLElement} wrap Subtask container element. @returns {void} */
+function showNoSubtasks(wrap) {
+  wrap.textContent = "No subtasks";
+}
+
+/** @param {{title?: string, done?: boolean}} subtask Subtask payload. @param {number} index Subtask index. @param {string|number} taskId Parent task ID. @returns {HTMLDivElement} Subtask row element. */
+function createSubtaskRow(subtask, index, taskId) {
+  const row = document.createElement("div");
+  row.className = "task-overlay-subtask";
+  row.appendChild(createSubtaskCheckbox(subtask, index, taskId));
+  row.appendChild(createSubtaskLabel(subtask));
+  return row;
+}
+
+/** @param {{title?: string, done?: boolean}} subtask Subtask payload. @param {number} index Subtask index. @param {string|number} taskId Parent task ID. @returns {HTMLInputElement} Checkbox element. */
+function createSubtaskCheckbox(subtask, index, taskId) {
+  const box = document.createElement("input");
+  box.type = "checkbox";
+  box.checked = !!subtask.done;
+  box.addEventListener("change", function () {
+    updateSubtaskDone(taskId, index, box.checked);
+  });
+  return box;
+}
+
+/** @param {{title?: string}} subtask Subtask payload. @returns {HTMLSpanElement} Subtask label element. */
+function createSubtaskLabel(subtask) {
+  const label = document.createElement("span");
+  label.textContent = subtask.title || "";
+  return label;
+}
+
+/** @param {string|number} taskId Parent task ID. @param {number} subIndex Subtask index. @param {boolean} done Next completion state. @returns {void} */
+function updateSubtaskDone(taskId, subIndex, done) {
+  const tasks = getTasks();
+  const idx = findTaskIndexById(taskId, tasks);
+  if (idx &lt; 0) return;
+  const task = tasks[idx];
+  if (!Array.isArray(task.subtasks) || !task.subtasks[subIndex]) return;
+  task.subtasks[subIndex].done = !!done;
+  saveTasks(tasks);
+  updateCardSubtaskProgress(task);
+}
+
+/** @param {BoardTask} task Updated task whose card progress should be refreshed. @returns {void} */
+function updateCardSubtaskProgress(task) {
+  const card = getCardByTaskId(task.id);
+  if (!card) return;
+  const subs = Array.isArray(task.subtasks) ? task.subtasks : [];
+  const total = subs.length;
+  const existing = card.querySelector(".card-progress");
+  if (!total) return removeCardProgress(existing);
+  const done = countDoneSubtasks(subs);
+  const percent = Math.round((done / total) * 100);
+  const progress = ensureCardProgress(card, existing);
+  if (!progress) return;
+  updateCardProgressDisplay(progress, done, total, percent);
+}
+
+/** @param {BoardTask} task Task whose priority should be normalized. @returns {string} Lowercase priority value. */
+function getTaskPriority(task) {
+  return String(task.priority || task.prio || "medium").toLowerCase();
+}
+
+/** @param {HTMLElement} prioEl Priority container element. @param {string} pr Normalized priority value. @returns {void} */
+function resetOverlayPriorityEl(prioEl, pr) {
+  prioEl.textContent = "";
+  prioEl.classList.remove("urgent", "medium", "low");
+  prioEl.classList.add(pr);
+}
+
+/** @param {HTMLElement} prioEl Priority container element. @param {string} pr Normalized priority value. @returns {void} */
+function appendOverlayPriorityText(prioEl, pr) {
+  const text = document.createElement("span");
+  text.textContent = capitalize(pr);
+  prioEl.appendChild(text);
+}
+
+/** @param {HTMLElement} prioEl Priority container element. @param {BoardTask} task Task to derive the icon from. @param {string} pr Normalized priority value. @returns {void} */
+function appendOverlayPriorityIcon(prioEl, task, pr) {
+  const icon = getPriorityIcon(task);
+  if (!icon) return;
+  const img = document.createElement("img");
+  img.src = icon;
+  img.alt = "Priority " + pr;
+  img.className = "task-overlay-prio-icon";
+  prioEl.appendChild(img);
+}
+
+/** @param {string|number} id Task ID to match. @returns {HTMLElement|null} Matching board card element. */
+function getCardByTaskId(id) {
+  return document.querySelector('.card[data-id="' + id + '"]');
+}
+
+/** @param {Element|null} existing Existing progress element. @returns {void} */
+function removeCardProgress(existing) {
+  if (existing) existing.remove();
+}
+
+/** @param {HTMLElement} card Board card element. @param {Element|null} existing Existing progress element. @returns {HTMLElement|null} Progress element to update. */
+function ensureCardProgress(card, existing) {
+  if (existing) return existing;
+  const bottom = card.querySelector(".card-bottom");
+  if (!bottom) return null;
+  const progress = buildCardProgressElement();
+  bottom.insertBefore(progress, bottom.firstChild);
+  return progress;
+}
+
+/** @returns {HTMLDivElement} Card progress wrapper element. */
+function buildCardProgressElement() {
+  const progress = document.createElement("div");
+  progress.className = "card-progress";
+  progress.innerHTML =
+    '&lt;div class="card-progress-bar">&lt;div class="card-progress-fill">&lt;/div>&lt;/div>' +
+    '&lt;div class="card-progress-text">&lt;/div>';
+  return progress;
+}
+
+/** @param {HTMLElement} progress Progress wrapper element. @param {number} done Completed subtasks. @param {number} total Total subtasks. @param {number} percent Completion percent. @returns {void} */
+function updateCardProgressDisplay(progress, done, total, percent) {
+  const fill = progress.querySelector(".card-progress-fill");
+  const text = progress.querySelector(".card-progress-text");
+  if (fill) fill.style.width = percent + "%";
+  if (text) text.textContent = done + "/" + total;
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#CONTACTS_STORAGE_KEY">CONTACTS_STORAGE_KEY</a></li><li><a href="global.html#DB_TASK_URL">DB_TASK_URL</a></li><li><a href="global.html#STORAGE_KEY">STORAGE_KEY</a></li><li><a href="global.html#TOUCH_DRAG_THRESHOLD">TOUCH_DRAG_THRESHOLD</a></li><li><a href="global.html#activateTouchDrag">activateTouchDrag</a></li><li><a href="global.html#activeSearchQuery">activeSearchQuery</a></li><li><a href="global.html#addAssignedByName">addAssignedByName</a></li><li><a href="global.html#addDragLeaveHandler">addDragLeaveHandler</a></li><li><a href="global.html#addDragOverHandler">addDragOverHandler</a></li><li><a href="global.html#addDropHandler">addDropHandler</a></li><li><a href="global.html#addOverlaySubtasksFromInput">addOverlaySubtasksFromInput</a></li><li><a href="global.html#appendOverlayContactRow">appendOverlayContactRow</a></li><li><a href="global.html#appendOverlayPriorityIcon">appendOverlayPriorityIcon</a></li><li><a href="global.html#appendOverlayPriorityText">appendOverlayPriorityText</a></li><li><a href="global.html#applyAssignedSelections">applyAssignedSelections</a></li><li><a href="global.html#applyOverlayEditValues">applyOverlayEditValues</a></li><li><a href="global.html#applySearchQuery">applySearchQuery</a></li><li><a href="global.html#attachZoneEvents">attachZoneEvents</a></li><li><a href="global.html#bindAddCardIcons">bindAddCardIcons</a></li><li><a href="global.html#bindDeleteConfirmBackdrop">bindDeleteConfirmBackdrop</a></li><li><a href="global.html#bindDeleteConfirmCancel">bindDeleteConfirmCancel</a></li><li><a href="global.html#bindDeleteConfirmEsc">bindDeleteConfirmEsc</a></li><li><a href="global.html#bindDeleteConfirmOk">bindDeleteConfirmOk</a></li><li><a href="global.html#bindDragEnd">bindDragEnd</a></li><li><a href="global.html#bindDragStart">bindDragStart</a></li><li><a href="global.html#bindDropZones">bindDropZones</a></li><li><a href="global.html#bindOverlayAssignedArrow">bindOverlayAssignedArrow</a></li><li><a href="global.html#bindOverlayAssignedInput">bindOverlayAssignedInput</a></li><li><a href="global.html#bindOverlayAssignedOutside">bindOverlayAssignedOutside</a></li><li><a href="global.html#bindOverlayBackdrop">bindOverlayBackdrop</a></li><li><a href="global.html#bindOverlayClose">bindOverlayClose</a></li><li><a href="global.html#bindOverlayDelete">bindOverlayDelete</a></li><li><a href="global.html#bindOverlayEdit">bindOverlayEdit</a></li><li><a href="global.html#bindOverlayEditForm">bindOverlayEditForm</a></li><li><a href="global.html#bindOverlayEsc">bindOverlayEsc</a></li><li><a href="global.html#bindOverlayOpenByCard">bindOverlayOpenByCard</a></li><li><a href="global.html#bindOverlaySave">bindOverlaySave</a></li><li><a href="global.html#bindOverlaySubtaskClear">bindOverlaySubtaskClear</a></li><li><a href="global.html#bindOverlaySubtaskInput">bindOverlaySubtaskInput</a></li><li><a href="global.html#bindOverlaySubtaskList">bindOverlaySubtaskList</a></li><li><a href="global.html#bindSearchEscape">bindSearchEscape</a></li><li><a href="global.html#bindSearchIcon">bindSearchIcon</a></li><li><a href="global.html#bindSearchInput">bindSearchInput</a></li><li><a href="global.html#bindTopAddButton">bindTopAddButton</a></li><li><a href="global.html#bindTouchDrag">bindTouchDrag</a></li><li><a href="global.html#buildAssignedAvatarsHtml">buildAssignedAvatarsHtml</a></li><li><a href="global.html#buildAvatarListHtml">buildAvatarListHtml</a></li><li><a href="global.html#buildAvatarRemainderHtml">buildAvatarRemainderHtml</a></li><li><a href="global.html#buildCardFooterHtml">buildCardFooterHtml</a></li><li><a href="global.html#buildCardFooterPriorityHtml">buildCardFooterPriorityHtml</a></li><li><a href="global.html#buildCardHtml">buildCardHtml</a></li><li><a href="global.html#buildCardProgressElement">buildCardProgressElement</a></li><li><a href="global.html#buildCardSubtaskProgressHtml">buildCardSubtaskProgressHtml</a></li><li><a href="global.html#buildContactsById">buildContactsById</a></li><li><a href="global.html#buildContactsByNameMap">buildContactsByNameMap</a></li><li><a href="global.html#buildEditedTaskFromForm">buildEditedTaskFromForm</a></li><li><a href="global.html#buildOverlayAvatarsHtml">buildOverlayAvatarsHtml</a></li><li><a href="global.html#buildOverlayContactRow">buildOverlayContactRow</a></li><li><a href="global.html#buildOverlayEditContext">buildOverlayEditContext</a></li><li><a href="global.html#buildOverlayMoreHtml">buildOverlayMoreHtml</a></li><li><a href="global.html#buildOverlaySelectedContactsView">buildOverlaySelectedContactsView</a></li><li><a href="global.html#buildPriorityIconHtml">buildPriorityIconHtml</a></li><li><a href="global.html#buildSingleAvatarHtml">buildSingleAvatarHtml</a></li><li><a href="global.html#buildTaskSearchTitle">buildTaskSearchTitle</a></li><li><a href="global.html#buildTasksMap">buildTasksMap</a></li><li><a href="global.html#capitalize">capitalize</a></li><li><a href="global.html#clearAllCards">clearAllCards</a></li><li><a href="global.html#clearDragOverClasses">clearDragOverClasses</a></li><li><a href="global.html#clearOverlaySubtaskInput">clearOverlaySubtaskInput</a></li><li><a href="global.html#closeAddTaskOverlay">closeAddTaskOverlay</a></li><li><a href="global.html#closeDeleteConfirm">closeDeleteConfirm</a></li><li><a href="global.html#closeOverlayAssignedDropdown">closeOverlayAssignedDropdown</a></li><li><a href="global.html#closeTaskOverlay">closeTaskOverlay</a></li><li><a href="global.html#collectOverlayElements">collectOverlayElements</a></li><li><a href="global.html#colorClassForSeed">colorClassForSeed</a></li><li><a href="global.html#countDoneSubtasks">countDoneSubtasks</a></li><li><a href="global.html#createCardElement">createCardElement</a></li><li><a href="global.html#createOverlaySubtaskCancelBtn">createOverlaySubtaskCancelBtn</a></li><li><a href="global.html#createOverlaySubtaskEditActions">createOverlaySubtaskEditActions</a></li><li><a href="global.html#createOverlaySubtaskEditInput">createOverlaySubtaskEditInput</a></li><li><a href="global.html#createOverlaySubtaskSaveBtn">createOverlaySubtaskSaveBtn</a></li><li><a href="global.html#createOverlaySubtaskSeparator">createOverlaySubtaskSeparator</a></li><li><a href="global.html#createPersonBadge">createPersonBadge</a></li><li><a href="global.html#createPersonRow">createPersonRow</a></li><li><a href="global.html#createPersonText">createPersonText</a></li><li><a href="global.html#createSubtaskCheckbox">createSubtaskCheckbox</a></li><li><a href="global.html#createSubtaskLabel">createSubtaskLabel</a></li><li><a href="global.html#createSubtaskRow">createSubtaskRow</a></li><li><a href="global.html#deleteTask">deleteTask</a></li><li><a href="global.html#ensureCardProgress">ensureCardProgress</a></li><li><a href="global.html#ensureTouchDragActive">ensureTouchDragActive</a></li><li><a href="global.html#enterOverlayEditMode">enterOverlayEditMode</a></li><li><a href="global.html#escapeHtml">escapeHtml</a></li><li><a href="global.html#exitOverlayEditMode">exitOverlayEditMode</a></li><li><a href="global.html#exitOverlayEditModeSafe">exitOverlayEditModeSafe</a></li><li><a href="global.html#extractNodeFromArray">extractNodeFromArray</a></li><li><a href="global.html#extractNodeFromEntry">extractNodeFromEntry</a></li><li><a href="global.html#extractNodeFromObject">extractNodeFromObject</a></li><li><a href="global.html#extractNodeFromRoot">extractNodeFromRoot</a></li><li><a href="global.html#fetchDBNode">fetchDBNode</a></li><li><a href="global.html#fetchDbRoot">fetchDbRoot</a></li><li><a href="global.html#fetchNodeFromRoot">fetchNodeFromRoot</a></li><li><a href="global.html#fillOverlayEditForm">fillOverlayEditForm</a></li><li><a href="global.html#finalizeBoardUi">finalizeBoardUi</a></li><li><a href="global.html#findTaskById">findTaskById</a></li><li><a href="global.html#findTaskIndexById">findTaskIndexById</a></li><li><a href="global.html#focusAndSearch">focusAndSearch</a></li><li><a href="global.html#focusOverlaySubtaskEditInput">focusOverlaySubtaskEditInput</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#getActiveSearchQuery">getActiveSearchQuery</a></li><li><a href="global.html#getAssignedContactsForCard">getAssignedContactsForCard</a></li><li><a href="global.html#getAssignedList">getAssignedList</a></li><li><a href="global.html#getAssignedValue">getAssignedValue</a></li><li><a href="global.html#getAvatarColor">getAvatarColor</a></li><li><a href="global.html#getCardByTaskId">getCardByTaskId</a></li><li><a href="global.html#getCardsContainer">getCardsContainer</a></li><li><a href="global.html#getColumnStatus">getColumnStatus</a></li><li><a href="global.html#getContactColorClass">getContactColorClass</a></li><li><a href="global.html#getContactsById">getContactsById</a></li><li><a href="global.html#getContactsByName">getContactsByName</a></li><li><a href="global.html#getDeleteConfirmEls">getDeleteConfirmEls</a></li><li><a href="global.html#getDraggedCard">getDraggedCard</a></li><li><a href="global.html#getFilteredTasks">getFilteredTasks</a></li><li><a href="global.html#getInitials">getInitials</a></li><li><a href="global.html#getInputValue">getInputValue</a></li><li><a href="global.html#getLabelClass">getLabelClass</a></li><li><a href="global.html#getLabelText">getLabelText</a></li><li><a href="global.html#getLocalDateInputValue">getLocalDateInputValue</a></li><li><a href="global.html#getNormalizeSearchFn">getNormalizeSearchFn</a></li><li><a href="global.html#getOverlayAssignedDropdownEls">getOverlayAssignedDropdownEls</a></li><li><a href="global.html#getOverlayContactRowHtml">getOverlayContactRowHtml</a></li><li><a href="global.html#getOverlayEditContactColorClass">getOverlayEditContactColorClass</a></li><li><a href="global.html#getOverlayElements">getOverlayElements</a></li><li><a href="global.html#getOverlaySubtaskEls">getOverlaySubtaskEls</a></li><li><a href="global.html#getOverlayViewContactColorClass">getOverlayViewContactColorClass</a></li><li><a href="global.html#getPriorityIcon">getPriorityIcon</a></li><li><a href="global.html#getPriorityText">getPriorityText</a></li><li><a href="global.html#getRawSubtasks">getRawSubtasks</a></li><li><a href="global.html#getRemoteTasksUrl">getRemoteTasksUrl</a></li><li><a href="global.html#getTaskIdForMap">getTaskIdForMap</a></li><li><a href="global.html#getTaskPriority">getTaskPriority</a></li><li><a href="global.html#getTaskSubtasks">getTaskSubtasks</a></li><li><a href="global.html#getTasks">getTasks</a></li><li><a href="global.html#goToAddTask">goToAddTask</a></li><li><a href="global.html#handleDeleteConfirmCancel">handleDeleteConfirmCancel</a></li><li><a href="global.html#handleDeleteConfirmOk">handleDeleteConfirmOk</a></li><li><a href="global.html#handleDrop">handleDrop</a></li><li><a href="global.html#handleOverlaySubtaskEnter">handleOverlaySubtaskEnter</a></li><li><a href="global.html#handleOverlaySubtaskListClick">handleOverlaySubtaskListClick</a></li><li><a href="global.html#handleSearchEscape">handleSearchEscape</a></li><li><a href="global.html#handleSubtaskCancel">handleSubtaskCancel</a></li><li><a href="global.html#handleSubtaskEdit">handleSubtaskEdit</a></li><li><a href="global.html#handleSubtaskRemove">handleSubtaskRemove</a></li><li><a href="global.html#handleSubtaskSave">handleSubtaskSave</a></li><li><a href="global.html#handleTouchDrop">handleTouchDrop</a></li><li><a href="global.html#hasTouchDragThreshold">hasTouchDragThreshold</a></li><li><a href="global.html#hashStringLocal">hashStringLocal</a></li><li><a href="global.html#initAddTaskOverlay">initAddTaskOverlay</a></li><li><a href="global.html#initBoardUi">initBoardUi</a></li><li><a href="global.html#initDeleteConfirm">initDeleteConfirm</a></li><li><a href="global.html#initDragAndDrop">initDragAndDrop</a></li><li><a href="global.html#initOverlayAssignedDropdown">initOverlayAssignedDropdown</a></li><li><a href="global.html#initOverlayEditWidgets">initOverlayEditWidgets</a></li><li><a href="global.html#initOverlayEvents">initOverlayEvents</a></li><li><a href="global.html#initOverlayPriorityButtons">initOverlayPriorityButtons</a></li><li><a href="global.html#initOverlaySubtasks">initOverlaySubtasks</a></li><li><a href="global.html#initRedirects">initRedirects</a></li><li><a href="global.html#initSearch">initSearch</a></li><li><a href="global.html#isBackdropOpen">isBackdropOpen</a></li><li><a href="global.html#isDragging">isDragging</a></li><li><a href="global.html#isEditingOverlay">isEditingOverlay</a></li><li><a href="global.html#lastTouchClientX">lastTouchClientX</a></li><li><a href="global.html#lastTouchClientY">lastTouchClientY</a></li><li><a href="global.html#loadContacts">loadContacts</a></li><li><a href="global.html#normalizeAssigned">normalizeAssigned</a></li><li><a href="global.html#normalizeAssignedArray">normalizeAssignedArray</a></li><li><a href="global.html#normalizeContactsData">normalizeContactsData</a></li><li><a href="global.html#normalizeOverlayContact">normalizeOverlayContact</a></li><li><a href="global.html#normalizeSearchQuery">normalizeSearchQuery</a></li><li><a href="global.html#normalizeSubtasks">normalizeSubtasks</a></li><li><a href="global.html#onBoardReady">onBoardReady</a></li><li><a href="global.html#onTouchEnd">onTouchEnd</a></li><li><a href="global.html#onTouchMove">onTouchMove</a></li><li><a href="global.html#onTouchStart">onTouchStart</a></li><li><a href="global.html#openAddTaskOverlay">openAddTaskOverlay</a></li><li><a href="global.html#openDeleteConfirm">openDeleteConfirm</a></li><li><a href="global.html#openOverlayAssignedDropdown">openOverlayAssignedDropdown</a></li><li><a href="global.html#openTaskOverlay">openTaskOverlay</a></li><li><a href="global.html#openedTaskId">openedTaskId</a></li><li><a href="global.html#overlayEditHashString">overlayEditHashString</a></li><li><a href="global.html#overlayPendingSubtasks">overlayPendingSubtasks</a></li><li><a href="global.html#overlaySelectedContacts">overlaySelectedContacts</a></li><li><a href="global.html#overlaySelectedPriority">overlaySelectedPriority</a></li><li><a href="global.html#overlayViewHashString">overlayViewHashString</a></li><li><a href="global.html#pendingDeleteId">pendingDeleteId</a></li><li><a href="global.html#persistTasksToIdb">persistTasksToIdb</a></li><li><a href="global.html#populateOverlayAssignedContacts">populateOverlayAssignedContacts</a></li><li><a href="global.html#putTasksToRemote">putTasksToRemote</a></li><li><a href="global.html#readContactsFromIdb">readContactsFromIdb</a></li><li><a href="global.html#readOverlayEditForm">readOverlayEditForm</a></li><li><a href="global.html#refreshBoardCards">refreshBoardCards</a></li><li><a href="global.html#refreshOverlayView">refreshOverlayView</a></li><li><a href="global.html#removeCardProgress">removeCardProgress</a></li><li><a href="global.html#removeTaskById">removeTaskById</a></li><li><a href="global.html#renderAllTasks">renderAllTasks</a></li><li><a href="global.html#renderBoardFromStorage">renderBoardFromStorage</a></li><li><a href="global.html#renderOverlayAssigned">renderOverlayAssigned</a></li><li><a href="global.html#renderOverlaySelectedContacts">renderOverlaySelectedContacts</a></li><li><a href="global.html#renderOverlaySubtasks">renderOverlaySubtasks</a></li><li><a href="global.html#renderOverlaySubtasksList">renderOverlaySubtasksList</a></li><li><a href="global.html#renderTaskCard">renderTaskCard</a></li><li><a href="global.html#resetOverlayAssignedDropdown">resetOverlayAssignedDropdown</a></li><li><a href="global.html#resetOverlayEditMode">resetOverlayEditMode</a></li><li><a href="global.html#resetOverlayPriorityEl">resetOverlayPriorityEl</a></li><li><a href="global.html#resolveAssignedContacts">resolveAssignedContacts</a></li><li><a href="global.html#resolveAssignedEntry">resolveAssignedEntry</a></li><li><a href="global.html#resolveAssignedFromContacts">resolveAssignedFromContacts</a></li><li><a href="global.html#resolveAssignedList">resolveAssignedList</a></li><li><a href="global.html#saveOverlayEdits">saveOverlayEdits</a></li><li><a href="global.html#saveTasks">saveTasks</a></li><li><a href="global.html#setDeleteConfirmText">setDeleteConfirmText</a></li><li><a href="global.html#setEmptyStateForColumn">setEmptyStateForColumn</a></li><li><a href="global.html#setInputValue">setInputValue</a></li><li><a href="global.html#setOverlayAssignedFromTask">setOverlayAssignedFromTask</a></li><li><a href="global.html#setOverlayAssignedText">setOverlayAssignedText</a></li><li><a href="global.html#setOverlayCategory">setOverlayCategory</a></li><li><a href="global.html#setOverlayDueMin">setOverlayDueMin</a></li><li><a href="global.html#setOverlayPriority">setOverlayPriority</a></li><li><a href="global.html#setOverlayPriorityButtons">setOverlayPriorityButtons</a></li><li><a href="global.html#setOverlaySubtasksFromTask">setOverlaySubtasksFromTask</a></li><li><a href="global.html#setOverlayTexts">setOverlayTexts</a></li><li><a href="global.html#setText">setText</a></li><li><a href="global.html#showDeleteConfirm">showDeleteConfirm</a></li><li><a href="global.html#showNoSubtasks">showNoSubtasks</a></li><li><a href="global.html#showOverlay">showOverlay</a></li><li><a href="global.html#startOverlayInlineSubtaskEdit">startOverlayInlineSubtaskEdit</a></li><li><a href="global.html#syncBoardData">syncBoardData</a></li><li><a href="global.html#syncContactsFromDB">syncContactsFromDB</a></li><li><a href="global.html#syncOverlaySubtaskButtons">syncOverlaySubtaskButtons</a></li><li><a href="global.html#syncTasksFromDB">syncTasksFromDB</a></li><li><a href="global.html#syncTasksToRemote">syncTasksToRemote</a></li><li><a href="global.html#taskMatchesQuery">taskMatchesQuery</a></li><li><a href="global.html#toggleOverlayAssignedDropdown">toggleOverlayAssignedDropdown</a></li><li><a href="global.html#toggleOverlayContact">toggleOverlayContact</a></li><li><a href="global.html#toggleOverlayEditState">toggleOverlayEditState</a></li><li><a href="global.html#touchDragActive">touchDragActive</a></li><li><a href="global.html#touchDragCard">touchDragCard</a></li><li><a href="global.html#touchDragId">touchDragId</a></li><li><a href="global.html#touchDragStartX">touchDragStartX</a></li><li><a href="global.html#touchDragStartY">touchDragStartY</a></li><li><a href="global.html#tryFetchNode">tryFetchNode</a></li><li><a href="global.html#trySaveContactsToIdb">trySaveContactsToIdb</a></li><li><a href="global.html#trySyncContacts">trySyncContacts</a></li><li><a href="global.html#trySyncTasks">trySyncTasks</a></li><li><a href="global.html#updateBodyScrollLock">updateBodyScrollLock</a></li><li><a href="global.html#updateCardProgressDisplay">updateCardProgressDisplay</a></li><li><a href="global.html#updateCardSubtaskProgress">updateCardSubtaskProgress</a></li><li><a href="global.html#updateEmptyStates">updateEmptyStates</a></li><li><a href="global.html#updateOverlayAssignedCheckboxes">updateOverlayAssignedCheckboxes</a></li><li><a href="global.html#updateSearchEmptyState">updateSearchEmptyState</a></li><li><a href="global.html#updateStatusAfterDrop">updateStatusAfterDrop</a></li><li><a href="global.html#updateSubtaskDone">updateSubtaskDone</a></li><li><a href="global.html#updateTaskStatus">updateTaskStatus</a></li><li><a href="global.html#updateTouchDragOver">updateTouchDragOver</a></li><li><a href="global.html#updateTouchPosition">updateTouchPosition</a></li><li><a href="global.html#waitForIdbReady">waitForIdbReady</a></li><li><a href="global.html#warnOverlayMissing">warnOverlayMissing</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Mar 14 2026 16:14:44 GMT+0100 (Central European Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
