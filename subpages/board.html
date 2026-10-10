@@ -47,7 +47,7 @@
                             <img src="../assets/icons/logo.svg" class="header-logo">
                             <span class="header-title">Kanban Project Management Tool</span>
                         </div>
-                
+
                         <div class="header-right">
                             <a class="header-help" href="./help.html">?</a>
                             <div class="header-user-area">
@@ -91,11 +91,21 @@
                         <!-- BOARD COLUMNS -->
                         <section class="board">
 
+                            <!-- TRIAGE -->
+                            <div class="column" data-status="triage">
+                                <header class="column-header">
+                                    <span>Triage</span>
+                                    <img src="../assets/icons/plus-button.svg" class="add-card-icon" alt="Add task" />
+                                </header>
+                                <div class="cards"></div>
+                                <div class="empty">No tasks Triage</div>
+                            </div>
+
                             <!-- TODO -->
                             <div class="column" data-status="todo">
                                 <header class="column-header">
 
-                                    <span>Todo</span>
+                                    <span>To do</span>
                                     <img src="../assets/icons/plus-button.svg" class="add-card-icon" alt="Add task" />
                                 </header>
                                 <div class="cards"></div>
