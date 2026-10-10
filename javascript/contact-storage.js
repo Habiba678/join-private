@@ -1,5 +1,5 @@
 /** Storage key and Firebase endpoint for contact data. */
-const STORAGE_KEY = "join_contacts_v1";
+const CONTACT_STORAGE_KEY = "join_contacts_v1";
 const dbTask = "https://join-projekt-ca51d-default-rtdb.europe-west1.firebasedatabase.app/";
 const firebaseApiKey = "AIzaSyBBW5Nar3SGKaTT_lpRmShPd1N9Dmx3jrw";
 const firebaseSessionKey = "join_firebase_anonymous_session";
